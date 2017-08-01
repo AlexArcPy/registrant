@@ -2,6 +2,10 @@
 
 This Python package is used for generating HTML reports about the contents of Esri geodatabases.
 
+Example of report:
+
+![Sample report](https://user-images.githubusercontent.com/7373268/28848206-5eef081e-7712-11e7-90a9-ea882268e928.png)
+
 ### Usage guidelines
 
 In order to use this tool, you would need to have ArcGIS Desktop, ArcGIS Server or ArcGIS Pro installed (for `arcpy` package). The code written is a valid Python 2 as well as Python 3 code which means you will be able to run against ArcGIS Desktop/Server Python 2.7 as well as ArcGIS Pro Python 3.5+. You will also need `pandas` and `beatifulSoup` Python packages which can be installed from `pip` if you are ArcGIS Desktop/Server user or using `conda` if you are ArcGIS Pro user. See [Installing Packages ](https://packaging.python.org/tutorials/installing-packages/) in the Python documentation (for ArcGIS Desktop users) and [Install a package](https://conda.io/docs/using/pkgs.html#install-a-package) in the Conda documentation (for ArcGIS Pro users) to get help.
