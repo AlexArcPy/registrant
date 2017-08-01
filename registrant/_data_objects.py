@@ -1,6 +1,7 @@
 '''
 Classes for data objects representing items stored in a geodatabase
 '''
+import operator
 from collections import OrderedDict
 import arcpy
 
@@ -103,7 +104,7 @@ class FeatureClass(Table):
         self.hasZ = getattr(self._desc, 'hasZ', '')
         self.hasSpatialIndex = getattr(self._desc, 'hasSpatialIndex', '')
         self.shapeFieldName = getattr(self._desc, 'shapeFieldName', '')
-        self.spatialReference = getattr(self._desc, 'spatialReference.name', '')
+        self.spatialReference = operator.attrgetter('spatialReference.name')(self._desc)
         self.areaFieldName = getattr(self._desc, 'areaFieldName', '')
         self.geometryStorage = getattr(self._desc, 'geometryStorage', '')
         self.lengthFieldName = getattr(self._desc, 'lengthFieldName', '')
