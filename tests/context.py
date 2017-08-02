@@ -3,12 +3,13 @@ Preparing the tests to be executed
 '''
 import sys
 import os
+import struct
 import tempfile
 import arcpy
 arcpy.env.overwriteOutput = True
 
-console_message = "Simple HTML report created at"
-test_config = {
+CONSOLE_MESSAGE = "Simple HTML report created at"
+TEST_CONFIG = {
     'Basic': {
         'name': "Basic",
         'json_results': r"data\Basic.json",
@@ -21,11 +22,13 @@ test_config = {
     }
 }
 
+PYTHON_VERSION = '_' + sys.version.split(' ')[0] + '_' + str(struct.calcsize('P') * 8) + 'bit'
+
 
 #----------------------------------------------------------------------
 def prepare_test(test_type):
     """prepare the geodatabase data for running tests on"""
-    cfg = test_config[test_type]
+    cfg = TEST_CONFIG[test_type]
     test_type = cfg['name']
     out_report_folder = os.path.join(tempfile.gettempdir(), test_type)
     if not os.path.exists(out_report_folder):
