@@ -1,6 +1,6 @@
 ### General
 
-This Python package is used for generating HTML reports about the contents of Esri geodatabases.
+This Python package is used for generating HTML reports about the contents of Esri geodatabases. It supports working with Esri personal/file geodatabases as well as RDBMS enterprise geodatabases (however, it also works with RDBMS databases that were not geodatabase enabled).
 
 Example of report:
 
