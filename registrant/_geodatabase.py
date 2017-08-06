@@ -1,6 +1,7 @@
 '''
 Geodatabase class representing an Esri geodatabase
 '''
+from __future__ import print_function
 import os
 from collections import OrderedDict
 import arcpy
@@ -31,7 +32,7 @@ class Geodatabase(object):
     #----------------------------------------------------------------------
     def _get_release(self):
         """return geodatabase release version"""
-        return GDB_RELEASE[arcpy.Describe(self.path).release]
+        return GDB_RELEASE.get(arcpy.Describe(self.path).release, '')
 
     #----------------------------------------------------------------------
     def _get_wkspc_type(self):
@@ -58,14 +59,17 @@ class Geodatabase(object):
         tables = []
         arcpy.env.workspace = self.path
         for tbl in arcpy.ListTables():
-            tbl_instance = Table(arcpy.Describe(tbl).catalogPath)
-            od = OrderedDict()
-            for k, v in GDB_TABLE_PROPS.items():
-                od[v] = getattr(tbl_instance, k, '')
+            try:
+                tbl_instance = Table(arcpy.Describe(tbl).catalogPath)
+                od = OrderedDict()
+                for k, v in GDB_TABLE_PROPS.items():
+                    od[v] = getattr(tbl_instance, k, '')
 
-            #custom props
-            od['Row count'] = tbl_instance._get_row_count()
-            tables.append(od)
+                #custom props
+                od['Row count'] = tbl_instance._get_row_count()
+                tables.append(od)
+            except Exception as e:
+                print("Error. Could not read table", tbl, ". Reason: ", e)
         return tables
 
     #----------------------------------------------------------------------
