@@ -1,0 +1,7 @@
+{
+    "domains": {
+        "Name": "SimpleCVDomain",
+        "Domain type": "CodedValue",
+        "Description": "Description body of cv domain"
+    }
+}

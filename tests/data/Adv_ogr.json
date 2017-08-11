@@ -1,0 +1,19 @@
+{
+    "domains": {
+        "Name": "Domain1",
+        "Domain type": "CodedValue",
+        "Description": "Desc1"
+    },
+
+    "tables": {
+        "Name": "Table1",
+        "Alias": null,
+        "ObjectID": "OBJECTID"
+    },
+
+    "fcs": {
+        "Name": "Fc1",
+        "Feature type": null,
+        "Shape type": "MultiPolygon"
+    }
+}
