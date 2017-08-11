@@ -3,10 +3,15 @@ Classes for data objects representing items stored in a geodatabase
 '''
 import operator
 from collections import OrderedDict
-import arcpy
+try:
+    import arcpy
+    arcpy_found = True
+except:
+    import ogr
+    arcpy_found = False
 
 from ._util_mappings import (GDB_TABLE_FIELD_PROPS, GDB_TABLE_INDEX_PROPS, GDB_FC_PROPS,
-                             GDB_TABLE_SUBTYPE_PROPS)
+                             GDB_TABLE_SUBTYPE_PROPS, OGR_GEOMETRY_TYPES)
 
 
 ########################################################################
@@ -31,6 +36,48 @@ class Dataset(Describe):
         self.path = path
         self.datasetType = getattr(self._desc, 'datasetType', '')
         self.changeTracked = getattr(self._desc, 'changeTracked', '')
+
+
+########################################################################
+class TableOgr(object):
+    """Table object stored in a file geodatabase accessible through OGR.
+    Initialized from a geodatabase path and table name"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, gdb_path, table_name):
+        """Constructor"""
+        self.ds = ogr.Open(gdb_path, 0)
+        self.layer = self.ds.GetLayerByName(table_name)
+        self.aliasName = ''
+        self.name = self.layer.GetName()
+        self.OIDFieldName = self.layer.GetFIDColumn()
+        self.globalIDFieldName = ''
+
+    #----------------------------------------------------------------------
+    def get_row_count(self):
+        """return number of rows in geodatabase table"""
+        return self.layer.GetFeatureCount()
+
+    #----------------------------------------------------------------------
+    def get_fields(self):
+        """return geodatabase table fields props as ordered dicts"""
+        fields = []
+        for field_order, field in enumerate(self.layer.schema, 1):
+            od = OrderedDict()
+            od['UI order'] = field_order
+            for k, v in GDB_TABLE_FIELD_PROPS.items():
+                if k == 'type':
+                    od[v] = field.GetTypeName()
+                elif k == 'defaultValue':
+                    od[v] = field.GetDefault()
+                elif k == 'length':
+                    od[v] = field.width
+                elif k == 'isNullable':
+                    od[v] = {0: False, 1: True}.get(field.IsNullable())
+                else:
+                    od[v] = getattr(field, k, '')
+            fields.append(od)
+        return fields
 
 
 ########################################################################
@@ -85,7 +132,7 @@ class Table(Dataset):
         return indexes
 
     #----------------------------------------------------------------------
-    def _get_row_count(self):
+    def get_row_count(self):
         """return number of rows in geodatabase table"""
         return int(arcpy.GetCount_management(self.path).getOutput(0))
 
@@ -108,3 +155,28 @@ class FeatureClass(Table):
         self.areaFieldName = getattr(self._desc, 'areaFieldName', '')
         self.geometryStorage = getattr(self._desc, 'geometryStorage', '')
         self.lengthFieldName = getattr(self._desc, 'lengthFieldName', '')
+
+
+########################################################################
+class FeatureClassOgr(TableOgr):
+    """Feature class object stored in a geodatabase accessible through OGR.
+    Initialized from a geodatabase path and feature class name"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, gdb_path, fc_name):
+        """Constructor"""
+        TableOgr.__init__(self, gdb_path, fc_name)
+        self.ds = ogr.Open(gdb_path, 0)
+        self.layer = self.ds.GetLayerByName(fc_name)
+        self.featureType = ''
+        self.shapeType = OGR_GEOMETRY_TYPES.get(self.layer.GetGeomType(), 'Unknown')
+        self.hasM = ''
+        self.hasZ = ''
+        self.hasSpatialIndex = ''
+        self.shapeFieldName = self.layer.GetGeometryColumn()
+        self.spatialReference = self.layer.GetSpatialRef().GetAttrValue(
+            'projcs') if self.layer.GetSpatialRef().IsProjected(
+            ) else self.layer.GetSpatialRef().GetAttrValue('geogcs')
+        self.areaFieldName = ''
+        self.geometryStorage = ''
+        self.lengthFieldName = ''

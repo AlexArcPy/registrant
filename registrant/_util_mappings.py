@@ -26,6 +26,47 @@ GDB_DOMAIN_PROPS = OrderedDict(
                                                                        'Merge policy'),
      ('splitPolicy', 'Split policy'), ('range', 'Range'), ('type', 'Data type')])
 
+OGR_GDB_DOMAIN_PROPS = OrderedDict(
+    [('Owner', 'Owner'), ('DomainName', 'Name'), ('domainType', 'Domain type'),
+     ('Description', 'Description'), ('codedValues', 'Coded values'), ('MergePolicy',
+                                                                       'Merge policy'),
+     ('SplitPolicy', 'Split policy'), ('range', 'Range'), ('FieldType', 'Data type')])
+
+#http://resources.esri.com/help/9.3/arcgisengine/arcobjects/esriGeodatabase/esriFieldType.htm
+OGR_DOMAIN_PROPS_MAPPINGS = {
+    'GPCodedValueDomain2': 'CodedValue',
+    'GPRangeDomain2': 'Range',
+    'esriMPTDefaultValue': 'DefaultValue',
+    'esriSPTDefaultValue': 'DefaultValue',
+    'esriSPTDuplicate': 'Duplicate',
+    'esriMPTSumValues': 'SumValues',
+    'esriMPTAreaWeighted': 'AreaWeighted',
+    'esriSPTGeometryRatio': 'GeometryRatio',
+    'esriFieldTypeInteger': 'Long Integer',
+    'esriFieldTypeSmallInteger': 'Integer',
+    'esriFieldTypeSingle': 'Float',
+    'esriFieldTypeDouble': 'Double',
+    'esriFieldTypeString': 'String',
+    'esriFieldTypeDate': 'Date',
+    'esriFieldTypeGeometry': 'Geometry',
+    'esriFieldTypeBlob': 'Blob',
+    'esriFieldTypeRaster': 'Raster',
+    'esriFieldTypeGUID': 'GUID',
+    'esriFieldTypeGlobalID': 'Global ID',
+    'esriFieldTypeXML': 'XML'
+}
+
+OGR_GEOMETRY_TYPES = {
+    0: 'Geometry',
+    1: 'Point',
+    2: 'Line',
+    3: 'Polygon',
+    4: 'MultiPoint',
+    5: 'MultiLineString',
+    6: 'MultiPolygon',
+    100: 'No Geometry'
+}
+
 GDB_TABLE_PROPS = OrderedDict(
     [('name', 'Name'), ('aliasName', 'Alias'), ('OIDFieldName', 'ObjectID'),
      ('globalIDFieldName', 'GlobalID'), ('changeTracked', 'Is change tracked')])

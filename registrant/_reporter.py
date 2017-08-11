@@ -12,13 +12,19 @@ from . import _geodatabase as GDB
 from . import _build_html
 import pandas as pd
 
-from ._data_objects import Table, FeatureClass
+from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._config import REPORT_DATA_FOLDER_PATH, REPORT_FILE_NAME
 
 pd.set_option('display.max_rows', 20)
 pd.set_option('display.width', 250)
 
 BOOL_MAPPER = {True: 'Yes', False: 'No'}
+
+try:
+    import arcpy
+    arcpy_found = True
+except:
+    arcpy_found = False
 
 
 #----------------------------------------------------------------------
@@ -163,9 +169,14 @@ def report_gdb_as_html(gdb_path,
                 tbl = None
                 if do_report_tables_fields:
                     #Tables fields and indexes
-                    tbl = Table(os.path.join(gdb.path, table_name))
+                    if arcpy_found:
+                        tbl = Table(os.path.join(gdb.path, table_name))
+                    else:
+                        tbl = TableOgr(gdb.path, table_name)
                     df_fields = map_boolean(pd.DataFrame.from_dict(tbl.get_fields()))
-                    df_fields['Default value'].fillna(value='', inplace=True)
+                    #when there is a table with no fields
+                    if not df_fields.empty:
+                        df_fields['Default value'].fillna(value='', inplace=True)
                     _build_html.add_div_to_html_page(
                         df_fields,
                         section_header_id=table_name,
@@ -173,7 +184,7 @@ def report_gdb_as_html(gdb_path,
                         header_size='h3',
                         report_path=report_file_path)
 
-                if do_report_tables_subtypes:
+                if do_report_tables_subtypes and arcpy_found:
                     if not tbl:
                         tbl = Table(os.path.join(gdb.path, table_name))
                     subtypes = tbl.get_subtypes()
@@ -191,7 +202,7 @@ def report_gdb_as_html(gdb_path,
                             header_size='h4',
                             report_path=report_file_path)
 
-                if do_report_tables_indexes:
+                if do_report_tables_indexes and arcpy_found:
                     if not tbl:
                         tbl = Table(os.path.join(gdb.path, table_name))
                     indexes = tbl.get_indexes()
@@ -234,9 +245,15 @@ def report_gdb_as_html(gdb_path,
 
                 fc = None
                 if do_report_fcs_fields:
-                    fc = FeatureClass(os.path.join(gdb.path, fc_name))
+                    if arcpy_found:
+                        fc = FeatureClass(os.path.join(gdb.path, fc_name))
+                    else:
+                        fc = FeatureClassOgr(gdb.path, fc_name)
                     df_fields = map_boolean(pd.DataFrame.from_dict(fc.get_fields()))
-                    df_fields['Default value'].fillna(value='', inplace=True)
+
+                    #when there is a feature class with no fields
+                    if not df_fields.empty:
+                        df_fields['Default value'].fillna(value='', inplace=True)
                     _build_html.add_div_to_html_page(
                         df_fields,
                         section_header_id=fc_name,
@@ -244,7 +261,7 @@ def report_gdb_as_html(gdb_path,
                         header_size='h3',
                         report_path=report_file_path)
 
-                if do_report_fcs_subtypes:
+                if do_report_fcs_subtypes and arcpy_found:
                     if not fc:
                         fc = FeatureClass(os.path.join(gdb.path, fc_name))
                     subtypes = fc.get_subtypes()
@@ -262,7 +279,7 @@ def report_gdb_as_html(gdb_path,
                             header_size='h4',
                             report_path=report_file_path)
 
-                if do_report_fcs_indexes:
+                if do_report_fcs_indexes and arcpy_found:
                     if not fc:
                         fc = FeatureClass(os.path.join(gdb.path, fc_name))
                     indexes = fc.get_indexes()
