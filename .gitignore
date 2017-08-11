@@ -107,3 +107,6 @@ ENV/
 # styles and linters
 *.yapf
 *.cfg
+
+# geodatabases
+*.gdb
