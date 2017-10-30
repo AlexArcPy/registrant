@@ -37,7 +37,7 @@ Please keep in mind that `arcpy` and `GDAL` won't be installed when installing t
 
 ### Getting started
 
-When calling the reporting function, you'd need to supply path to your geodatabase and output folder for report data files, and optionally specify what information you would like to include into your output HTML report. Depending on the geodatabase size, number of chosen items to include in the report as well as the available system resources, it might take some minutes to run. 
+When calling the reporting function, you'd need to supply path to your geodatabase and output folder for report data files, and optionally specify what information you would like to include into your output HTML report. Depending on the geodatabase size, number of chosen items to include in the report as well as the available system resources, it might take some minutes to run.
 
 The package has convenience functions which can be used to specify what exactly do you want to generate report for. The `gdb2html` function will create a complete report. However, you can specify if you want to report only domains, only tables, or only feature classes using the `domains2html`, `tables2html`, and `fcs2html` functions respectively. If you would like to have a fine-grained control over what information will be included in the report, you can use `report_gdb_as_html` function which has a few booleans you can set (for instance, you may want to get only list of tables and feature classes without reporting their fields, subtypes, and indexes).
 
@@ -123,6 +123,8 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 * By using the `Print` link one can create a printable representation of the report; opening printable report can take some time depending on the number of items in your geodatabase. The report page will be visible in the new browser tab `about:blank`. The generation of printable report works best in Firefox. Please mind that Chrome and IE can choke when the report content is very large.
 
 ### New functionality under consideration
+
+take each domain > list all tables/fcs that use this domain > list all fields that have this domain assigned > count rows using domain value group by code
 
 #### Report design
 * Reorder columns within the data tables https://datatables.net/extensions/colreorder/
