@@ -3,21 +3,24 @@ Geodatabase class representing an Esri geodatabase
 '''
 from __future__ import print_function
 import os
+import datetime
+import tempfile
+import xml.etree.ElementTree as ET
 from collections import OrderedDict, defaultdict
 
 try:
     import arcpy
     arcpy_found = True
+    arcpy.env.overwriteOutput = True
 except:
     arcpy_found = False
     import ogr
     import json
-    import xml.etree.ElementTree as ET
 
 from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._util_mappings import (GDB_RELEASE, GDB_WKSPC_TYPE, GDB_PROPS, GDB_DOMAIN_PROPS,
-                             GDB_TABLE_PROPS, GDB_FC_PROPS, OGR_GDB_DOMAIN_PROPS,
-                             OGR_DOMAIN_PROPS_MAPPINGS)
+                             GDB_REPLICA_PROPS, GDB_TABLE_PROPS, GDB_FC_PROPS,
+                             OGR_GDB_DOMAIN_PROPS, OGR_DOMAIN_PROPS_MAPPINGS)
 
 
 ########################################################################
@@ -37,6 +40,60 @@ class Geodatabase(object):
         for k, v in GDB_PROPS.items():
             od[v] = self.__dict__[k]
         return od
+
+    #----------------------------------------------------------------------
+    def get_replicas(self):
+        """return geodatabase replicas as ordered dict"""
+        replicas_props = []
+        if arcpy_found:
+            # due to bug in arcpy, cannot use da.ListReplicas date properties
+            # `lastSend` and `lastReceive` for file/personal geodatabases
+            # because it crashes the Python process
+            for replica in arcpy.da.ListReplicas(self.path):
+                od = OrderedDict()
+                for k, v in GDB_REPLICA_PROPS.items():
+                    if (self.wkspc_type != 'Enterprise geodatabase') and (k in (
+                            'lastReceive', 'lastSend')):
+                        od[v] = 'Not available'
+                    else:
+                        prop_value = getattr(replica, k, '')
+                        if isinstance(prop_value,
+                                      datetime.datetime) and prop_value.year == 1899:
+                            od[v] = ''
+                        else:
+                            if prop_value != None:
+                                od[v] = prop_value
+                            else:
+                                od[v] = ''
+
+                # need at least Standard license of ArcGIS Desktop to run this GP tool
+                if arcpy.ProductInfo() in ('ArcEditor', 'ArcInfo'):
+                    replica_schema_xml = os.path.join(tempfile.gettempdir(),
+                                                      'ReplicaSchema.xml')
+                    arcpy.ExportReplicaSchema_management(self.path, replica_schema_xml,
+                                                         replica.name)
+                    with open(replica_schema_xml, 'r') as f:
+                        data = f.readlines()[0]
+                    try:
+                        os.remove(replica_schema_xml)
+                    except:
+                        pass
+                    xml = ET.fromstring(data)
+                    od['Creation date'] = xml.find('WorkspaceDefinition').find(
+                        'GPReplica').find('CreationDate').text.replace('T', ' ')
+
+                    datasets = xml.find('WorkspaceDefinition').find('GPReplica').find(
+                        'GPReplicaDescription').find('GPReplicaDatasets')
+                    datasets_pairs = sorted(
+                        [(d.find('DatasetName').text, d.find('TargetName').text)
+                         for d in datasets.getchildren()],
+                        key=lambda pair: pair[0].lower())
+
+                    od['Datasets'] = '<br>'.join(
+                        ['{} -> {}'.format(i[0], i[1]) for i in datasets_pairs])
+
+                replicas_props.append(od)
+        return replicas_props
 
     #----------------------------------------------------------------------
     def get_domains(self):

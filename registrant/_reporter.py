@@ -36,6 +36,7 @@ def map_boolean(df):
 #----------------------------------------------------------------------
 def report_gdb_as_html(gdb_path,
                        out_report_folder_path,
+                       do_report_replicas=True,
                        do_report_domains=True,
                        do_report_domains_coded_values=True,
                        do_report_tables=True,
@@ -96,8 +97,24 @@ def report_gdb_as_html(gdb_path,
         report_path=report_file_path)
 
     #------------------------------------------------------------------------------------------------
-    #DOMAINS
+    #REPLICAS
     #------------------------------------------------------------------------------------------------
+
+    if do_report_replicas:
+        replicas = gdb.get_replicas()
+        if replicas:
+            df = map_boolean(pd.DataFrame.from_dict(replicas).sort_values(by='Name'))
+
+            _build_html.add_div_to_html_page(
+                df=df,
+                section_header_id="replicas",
+                section_title="Replicas",
+                report_path=report_file_path,
+                escape=False)
+
+#------------------------------------------------------------------------------------------------
+#DOMAINS
+#------------------------------------------------------------------------------------------------
 
     if do_report_domains | do_report_domains_coded_values:
         #Domains properties + coded values domains from Coded values property

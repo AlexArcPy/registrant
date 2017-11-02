@@ -72,12 +72,13 @@ def add_div_to_html_page(df,
                          report_path,
                          section_header_id,
                          section_title="New section",
-                         header_size='h2'):
+                         header_size='h2',
+                         escape=True):
     """append div with the data table to the body of the report template
     html file and saves the updated the HTML object to the .html file"""
 
     html_table = df.to_html(
-        index=False, classes="table table-striped table-hover", border=0)
+        index=False, classes="table table-striped table-hover", border=0, escape=escape)
 
     with open(report_path, 'r', encoding='utf-8') as report:
         soup_page = BeautifulSoup(report, HTML_PARSER)
