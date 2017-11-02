@@ -138,6 +138,9 @@ take each domain > list all tables/fcs that use this domain > list all fields th
 
 2. Cd to the `tests` folder and run `coverage html -d coverage_html --omit "C:\Program Files (x86)\ArcGIS\Desktop10.5\*"`. This will generate a nice `.html` report highlighting the covered code. The `--omit` flag is used to exclude calls to `arcpy` in the report.
 
+Keep in mind that you need to make sure that `arcpy` is not found when you run tests for OGR as this will make the tests fail.
+In Wing IDE, right-click OGR test files > File Properties menu > Testing tab > choose empty `Custom` for Python path for the Python environments used to run the OGR tests (Anaconda env). This won't let get ArcGIS paths added to the sys.path.
+
 ### Issues
 
 Did you find a bug? Do you need report to include some other information? Please let me know by submitting an issue.
