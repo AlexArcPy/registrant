@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='registrant',
-    version='0.1',
+    version='0.2',
     description='Esri geodatabase HTML reporter',
     long_description=long_description,
     url='https://github.com/AlexArcPy/registrant',
