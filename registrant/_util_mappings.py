@@ -20,6 +20,12 @@ GDB_WKSPC_TYPE = {
 GDB_PROPS = OrderedDict([('path', 'Path'), ('release', 'Release'), ('wkspc_type',
                                                                     'Workspace type')])
 
+GDB_REPLICA_PROPS = OrderedDict(
+    [('name', 'Name'), ('owner', 'Owner'), ('role', 'Role'), ('type', 'Type'),
+     ('version', 'Version'), ('hasConflicts', 'Has conflicts'), ('isParent', 'Is parent'),
+     ('isSender', 'Is sender'), ('lastReceive', 'Last receive'), ('lastSend',
+                                                                  'Last send')])
+
 GDB_DOMAIN_PROPS = OrderedDict(
     [('owner', 'Owner'), ('name', 'Name'), ('domainType', 'Domain type'),
      ('description', 'Description'), ('codedValues', 'Coded values'), ('mergePolicy',
