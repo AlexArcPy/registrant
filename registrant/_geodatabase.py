@@ -107,6 +107,7 @@ class Geodatabase(object):
                 for k, v in GDB_VERSION_PROPS.items():
                     if k in ('ancestors', 'children'):
                         prop_value = ', '.join([s.name for s in getattr(version, k) if s])
+                        od[v] = prop_value
                     else:
                         prop_value = getattr(version, k, '')
                         if prop_value != None:
