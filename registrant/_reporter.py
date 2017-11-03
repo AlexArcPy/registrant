@@ -36,6 +36,7 @@ def map_boolean(df):
 #----------------------------------------------------------------------
 def report_gdb_as_html(gdb_path,
                        out_report_folder_path,
+                       do_report_versions=True,
                        do_report_replicas=True,
                        do_report_domains=True,
                        do_report_domains_coded_values=True,
@@ -96,9 +97,9 @@ def report_gdb_as_html(gdb_path,
         section_title="Overview",
         report_path=report_file_path)
 
-    #------------------------------------------------------------------------------------------------
-    #REPLICAS
-    #------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
+#REPLICAS
+#------------------------------------------------------------------------------------------------
 
     if do_report_replicas:
         replicas = gdb.get_replicas()
@@ -111,6 +112,21 @@ def report_gdb_as_html(gdb_path,
                 section_title="Replicas",
                 report_path=report_file_path,
                 escape=False)
+
+#------------------------------------------------------------------------------------------------
+#VERSIONS
+#------------------------------------------------------------------------------------------------
+
+    if do_report_versions:
+        versions = gdb.get_versions()
+        if versions:
+            df = map_boolean(pd.DataFrame.from_dict(versions).sort_values(by='Name'))
+
+            _build_html.add_div_to_html_page(
+                df=df,
+                section_header_id="versions",
+                section_title="Versions",
+                report_path=report_file_path)
 
 #------------------------------------------------------------------------------------------------
 #DOMAINS

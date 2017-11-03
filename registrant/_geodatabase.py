@@ -19,7 +19,8 @@ except:
 
 from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._util_mappings import (GDB_RELEASE, GDB_WKSPC_TYPE, GDB_PROPS, GDB_DOMAIN_PROPS,
-                             GDB_REPLICA_PROPS, GDB_TABLE_PROPS, GDB_FC_PROPS,
+                             GDB_REPLICA_PROPS, GDB_VERSION_PROPS,
+                             GDB_TABLE_PROPS, GDB_FC_PROPS,
                              OGR_GDB_DOMAIN_PROPS, OGR_DOMAIN_PROPS_MAPPINGS)
 
 
@@ -32,6 +33,7 @@ class Geodatabase(object):
         self.path = path
         self.release = self._get_release()
         self.wkspc_type = self._get_wkspc_type()
+        self.is_gdb_enabled = True if self.release else False
 
     #----------------------------------------------------------------------
     def get_pretty_props(self):
@@ -45,7 +47,7 @@ class Geodatabase(object):
     def get_replicas(self):
         """return geodatabase replicas as ordered dict"""
         replicas_props = []
-        if arcpy_found:
+        if arcpy_found and self.is_gdb_enabled:
             # due to bug in arcpy, cannot use da.ListReplicas date properties
             # `lastSend` and `lastReceive` for file/personal geodatabases
             # because it crashes the Python process
@@ -96,55 +98,76 @@ class Geodatabase(object):
         return replicas_props
 
     #----------------------------------------------------------------------
+    def get_versions(self):
+        """return SDE geodatabase version objects as ordered dict"""
+        versions_props = []
+        if arcpy_found and self.wkspc_type == 'Enterprise geodatabase' and self.is_gdb_enabled:
+            for version in arcpy.da.ListVersions(self.path):
+                od = OrderedDict()
+                for k, v in GDB_VERSION_PROPS.items():
+                    if k in ('ancestors', 'children'):
+                        prop_value = ', '.join([s.name for s in getattr(version, k) if s])
+                    else:
+                        prop_value = getattr(version, k, '')
+                        if prop_value != None:
+                            od[v] = prop_value
+                        else:
+                            od[v] = ''
+                versions_props.append(od)
+
+        return versions_props
+
+    #----------------------------------------------------------------------
     def get_domains(self):
         """return geodatabase domains as ordered dict"""
         domains_props = []
-        if arcpy_found:
-            for domain in arcpy.da.ListDomains(self.path):
-                od = OrderedDict()
-                for k, v in GDB_DOMAIN_PROPS.items():
-                    od[v] = getattr(domain, k, '')
-                domains_props.append(od)
-            return domains_props
-        else:
-            gdb_domains = self._ogr_get_domains()
-            for domain_type, domains in gdb_domains.items():
-                for domain in domains:
+        if self.is_gdb_enabled:
+            if arcpy_found:
+                for domain in arcpy.da.ListDomains(self.path):
                     od = OrderedDict()
-                    for k, v in OGR_GDB_DOMAIN_PROPS.items():
-                        if k == 'domainType':
-                            od[v] = OGR_DOMAIN_PROPS_MAPPINGS[domain_type]
-
-                        #describing domain range
-                        elif k == 'range':
-                            try:
-                                od[v] = (float(domain.find('MinValue').text),
-                                         float(domain.find('MaxValue').text))
-                            except AttributeError:
-                                od[v] = ''
-
-                        #describing domain coded values
-                        elif k == 'codedValues':
-                            try:
-                                cvs = domain.find('CodedValues').findall('CodedValue')
-                                od[v] = {
-                                    cv.find('Code').text: cv.find('Name').text
-                                    for cv in cvs
-                                }
-                            except AttributeError:
-                                od[v] = ''
-                        else:
-                            try:
-                                if domain.find(k).text:
-                                    od[v] = OGR_DOMAIN_PROPS_MAPPINGS.get(
-                                        domain.find(k).text, domain.find(k).text)
-                                else:
-                                    od[v] = ''
-                            except AttributeError:
-                                od[v] = ''
-
+                    for k, v in GDB_DOMAIN_PROPS.items():
+                        od[v] = getattr(domain, k, '')
                     domains_props.append(od)
-            return domains_props
+
+            else:
+                gdb_domains = self._ogr_get_domains()
+                for domain_type, domains in gdb_domains.items():
+                    for domain in domains:
+                        od = OrderedDict()
+                        for k, v in OGR_GDB_DOMAIN_PROPS.items():
+                            if k == 'domainType':
+                                od[v] = OGR_DOMAIN_PROPS_MAPPINGS[domain_type]
+
+                            #describing domain range
+                            elif k == 'range':
+                                try:
+                                    od[v] = (float(domain.find('MinValue').text),
+                                             float(domain.find('MaxValue').text))
+                                except AttributeError:
+                                    od[v] = ''
+
+                            #describing domain coded values
+                            elif k == 'codedValues':
+                                try:
+                                    cvs = domain.find('CodedValues').findall('CodedValue')
+                                    od[v] = {
+                                        cv.find('Code').text: cv.find('Name').text
+                                        for cv in cvs
+                                    }
+                                except AttributeError:
+                                    od[v] = ''
+                            else:
+                                try:
+                                    if domain.find(k).text:
+                                        od[v] = OGR_DOMAIN_PROPS_MAPPINGS.get(
+                                            domain.find(k).text, domain.find(k).text)
+                                    else:
+                                        od[v] = ''
+                                except AttributeError:
+                                    od[v] = ''
+                        domains_props.append(od)
+
+        return domains_props
 
     #----------------------------------------------------------------------
     def get_tables(self):

@@ -26,6 +26,12 @@ GDB_REPLICA_PROPS = OrderedDict(
      ('isSender', 'Is sender'), ('lastReceive', 'Last receive'), ('lastSend',
                                                                   'Last send')])
 
+GDB_VERSION_PROPS = OrderedDict(
+    [('name', 'Name'), ('parentVersionName', 'Parent version'), ('description',
+                                                                 'Description'),
+     ('access', 'Access'), ('ancestors', 'Ancestors'), ('children', 'Children'),
+     ('isOwner', 'Is owner'), ('created', 'Created'), ('lastModified', 'Last modified')])
+
 GDB_DOMAIN_PROPS = OrderedDict(
     [('owner', 'Owner'), ('name', 'Name'), ('domainType', 'Domain type'),
      ('description', 'Description'), ('codedValues', 'Coded values'), ('mergePolicy',
