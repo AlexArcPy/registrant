@@ -104,6 +104,12 @@ This tool uses `arcpy` package (and if you don't have any ArcGIS software instal
 * Table & Feature class subtypes (`arcpy` only)
 * Table & Feature class indexes (`arcpy` only)
 
+Added in v0.2:
+* Replicas and replicas' datasets (`arcpy` only)
+
+Added in v0.3:
+* Versions in SDE geodatabases (`arcpy` only)
+
 All fields in tables and feature classes have a property showing the order of the field (`UI order`) within the dataset as shown in the dataset properties window in ArcGIS Desktop or Pro that is the order in which the fields were added. This is the order in which fields appear when you open the Feature Class Properties or Table Properties window in ArcGIS Desktop or when you access the Fields window in ArcGIS Pro.
 
 As a note, Unicode characters are supported in geodatabase table names, field aliases and so forth. The web page should be drawn using the `utf-8` encoding. Should any characters appear strange, make sure you are viewing the report page in the proper encoding:
