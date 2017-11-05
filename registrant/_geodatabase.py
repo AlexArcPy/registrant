@@ -221,24 +221,14 @@ class Geodatabase(object):
                 for fd in fds:
                     arcpy.env.workspace = os.path.join(self.path, fd)
                     for fc in arcpy.ListFeatureClasses():
-                        fc_instance = FeatureClass(arcpy.Describe(fc).catalogPath)
-                        od = OrderedDict()
-                        for k, v in GDB_FC_PROPS.items():
-                            od[v] = getattr(fc_instance, k, '')
-                        #custom props
-                        od['Row count'] = fc_instance.get_row_count()
+                        od = self._get_fc_props(fc)
                         od['Feature dataset'] = fd
                         fcs.append(od)
 
             #iterate feature classes in the geodatabase root
             arcpy.env.workspace = self.path
             for fc in arcpy.ListFeatureClasses():
-                fc_instance = FeatureClass(arcpy.Describe(fc).catalogPath)
-                od = OrderedDict()
-                for k, v in GDB_FC_PROPS.items():
-                    od[v] = getattr(fc_instance, k, '')
-                #custom props
-                od['Row count'] = fc_instance.get_row_count()
+                od = self._get_fc_props(fc)
                 od['Feature dataset'] = ''
                 fcs.append(od)
 
@@ -295,6 +285,27 @@ class Geodatabase(object):
                     domains[xml.tag].append(xml)
         del ds
         return domains
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _get_fc_props(fc):
+        """return single geodatabase feature class props as ordered dict"""
+        fc_instance = FeatureClass(arcpy.Describe(fc).catalogPath)
+        od = OrderedDict()
+        for k, v in GDB_FC_PROPS.items():
+            od[v] = getattr(fc_instance, k, '')
+        #custom props
+        od['Row count'] = fc_instance.get_row_count()
+        num_attachments = fc_instance.get_attachments_count()
+
+        if num_attachments != None:
+            od['Attachments enabled'] = True
+            od['Attachments count'] = num_attachments
+        else:
+            od['Attachments enabled'] = False
+            od['Attachments count'] = ''
+
+        return od
 
     #----------------------------------------------------------------------
     def _get_release(self):
