@@ -1,6 +1,7 @@
 '''
 Classes for data objects representing items stored in a geodatabase
 '''
+import os
 import operator
 from collections import OrderedDict
 try:
@@ -24,6 +25,7 @@ class Describe(object):
         self._desc = arcpy.Describe(self.path)
         self.catalogPath = self._desc.catalogPath
         self.name = self._desc.name
+        self.root = os.path.dirname(self.catalogPath)
 
 
 ########################################################################
@@ -130,6 +132,21 @@ class Table(Dataset):
                     od[v] = getattr(index, k, '')
             indexes.append(od)
         return indexes
+
+    #----------------------------------------------------------------------
+    def get_attachments_count(self):
+        """return number of attachments stored for a table/feature class"""
+        rel_classes = [
+            os.path.join(self.root, rc)
+            for rc in getattr(self._desc, 'relationshipClassNames', [''])
+        ]
+        for rc in rel_classes:
+            rc_desc = arcpy.Describe(rc)
+            if rc_desc.isAttachmentRelationship:
+                return int(
+                    arcpy.GetCount_management(
+                        os.path.join(self.root, rc_desc.destinationClassNames[0]))
+                    .getOutput(0))
 
     #----------------------------------------------------------------------
     def get_row_count(self):

@@ -19,9 +19,9 @@ except:
 
 from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._util_mappings import (GDB_RELEASE, GDB_WKSPC_TYPE, GDB_PROPS, GDB_DOMAIN_PROPS,
-                             GDB_REPLICA_PROPS, GDB_VERSION_PROPS,
-                             GDB_TABLE_PROPS, GDB_FC_PROPS,
-                             OGR_GDB_DOMAIN_PROPS, OGR_DOMAIN_PROPS_MAPPINGS)
+                             GDB_REPLICA_PROPS, GDB_VERSION_PROPS, GDB_TABLE_PROPS,
+                             GDB_FC_PROPS, OGR_GDB_DOMAIN_PROPS,
+                             OGR_DOMAIN_PROPS_MAPPINGS)
 
 
 ########################################################################
@@ -179,12 +179,23 @@ class Geodatabase(object):
             for tbl in arcpy.ListTables():
                 try:
                     tbl_instance = Table(arcpy.Describe(tbl).catalogPath)
+                    if tbl_instance.OIDFieldName == 'ATTACHMENTID':
+                        continue
                     od = OrderedDict()
                     for k, v in GDB_TABLE_PROPS.items():
                         od[v] = getattr(tbl_instance, k, '')
 
                     #custom props
                     od['Row count'] = tbl_instance.get_row_count()
+                    num_attachments = tbl_instance.get_attachments_count()
+
+                    if num_attachments != None:
+                        od['Attachments enabled'] = True
+                        od['Attachments count'] = num_attachments
+                    else:
+                        od['Attachments enabled'] = False
+                        od['Attachments count'] = ''
+
                     tables.append(od)
                 except Exception as e:
                     print("Error. Could not read table", tbl, ". Reason: ", e)
