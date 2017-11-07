@@ -13,6 +13,7 @@
   <link href="css/dataTables.bootstrap.min.css" rel="stylesheet" />
   <link href="css/buttons.dataTables.min.css" rel="stylesheet" />
   <link href="css/select.dataTables.min.css" rel="stylesheet" />
+  <link href="css/colReorder.dataTables.min.css" rel="stylesheet"/>
   <link href="css/ie10-viewport-bug-workaround.css" rel="stylesheet" />
   <link href="css/dashboard.css" rel="stylesheet" />
 
@@ -41,6 +42,7 @@
   <script src="js/buttons.print.min.js "></script>
   <script src="js/dataTables.buttons.min.js"></script>
   <script src="js/dataTables.select.min.js"></script>
+  <script src="js/dataTables.colReorder.min.js"></script>
 
   <script>
     $(document).ready(function () {
@@ -55,10 +57,11 @@
           "aLengthMenu": [[20, 50, 75, -1], [20, 50, 75, "All"]],
           "pageLength": 20,
           buttons: buttons,
+          colReorder: true,
           select: {
             style: "os",
             blurable: true
-          }
+          } 
         }
       );
     });
