@@ -11,7 +11,7 @@ except:
     import ogr
     arcpy_found = False
 
-from ._util_mappings import (GDB_TABLE_FIELD_PROPS, GDB_TABLE_INDEX_PROPS, GDB_FC_PROPS,
+from ._util_mappings import (GDB_TABLE_FIELD_PROPS, GDB_TABLE_INDEX_PROPS,
                              GDB_TABLE_SUBTYPE_PROPS, OGR_GEOMETRY_TYPES)
 
 

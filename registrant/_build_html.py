@@ -4,16 +4,14 @@ Internal worker for constructing HTML source code strings
 
 import os
 import shutil
-
-from ._config import (REPORT_TEMPLATE_FILE, HTML_PARSER, DIV_CSS_CLASS,
-                      COMMONS_LICENSE_TEXT)
 from codecs import open
-
 from bs4 import BeautifulSoup
 import pandas as pd
 pd.set_option('display.max_colwidth',
               -1)  # to not truncate string content when export to HTML
 
+from ._config import (REPORT_TEMPLATE_FILE, HTML_PARSER, DIV_CSS_CLASS,
+                      COMMONS_LICENSE_TEXT)
 
 #----------------------------------------------------------------------
 def do_copy_report(report_path, report_template_file):

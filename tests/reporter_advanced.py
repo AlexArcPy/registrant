@@ -6,9 +6,8 @@ from __future__ import print_function
 
 import os
 import unittest
-import webbrowser
 
-from .context import (registrant, TEST_CONFIG, CONSOLE_MESSAGE, prepare_test,
+from .context import (registrant, CONSOLE_MESSAGE, prepare_test,
                       PYTHON_VERSION)
 from . import helpers
 
@@ -20,6 +19,7 @@ class FullGeodatabase(object):
 
     #----------------------------------------------------------------------
     def setUp(self):
+        """set up the test context"""
         self.in_gdb, self.out_report_folder, self.json_results = prepare_test('Advanced')
 
     #----------------------------------------------------------------------

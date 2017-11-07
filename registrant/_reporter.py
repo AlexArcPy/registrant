@@ -7,10 +7,10 @@ import os
 import shutil
 import datetime
 from functools import partial
+import pandas as pd
 
 from . import _geodatabase as GDB
 from . import _build_html
-import pandas as pd
 
 from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._config import REPORT_DATA_FOLDER_PATH, REPORT_FILE_NAME
