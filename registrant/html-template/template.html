@@ -12,7 +12,7 @@
   <link href="css/bootstrap.min.css" rel="stylesheet" />
   <link href="css/dataTables.bootstrap.min.css" rel="stylesheet" />
   <link href="css/buttons.dataTables.min.css" rel="stylesheet" />
-
+  <link href="css/select.dataTables.min.css" rel="stylesheet" />
   <link href="css/ie10-viewport-bug-workaround.css" rel="stylesheet" />
   <link href="css/dashboard.css" rel="stylesheet" />
 
@@ -21,7 +21,12 @@
     .table-hover tr:hover {
       background-color: #ADD8E6;
     }
-	
+
+    .checkBoxLabel {
+      font-size: 12px;
+      font-weight: normal;
+    }
+
     .license-text {
       font-size: 8pt;
       color: grey;
@@ -35,6 +40,7 @@
 
   <script src="js/buttons.print.min.js "></script>
   <script src="js/dataTables.buttons.min.js"></script>
+  <script src="js/dataTables.select.min.js"></script>
 
   <script>
     $(document).ready(function () {
@@ -48,7 +54,11 @@
         {
           "aLengthMenu": [[20, 50, 75, -1], [20, 50, 75, "All"]],
           "pageLength": 20,
-          buttons: buttons
+          buttons: buttons,
+          select: {
+            style: "os",
+            blurable: true
+          }
         }
       );
     });
@@ -90,6 +100,21 @@
       ); //end of data table
       table.button('0').trigger();
     };
+
+    // to support smaller screens enable word-break in data table
+    function enableWordBreak() {
+      var tds = document.getElementsByClassName('main')[0].getElementsByTagName('td');
+      if (document.getElementById("toggleWordBreak").checked) {
+        var wordBreakType = "break-all";
+      }
+      else {
+        var wordBreakType = "normal";
+      }
+      for (var i = 0; i < tds.length; i++) {
+        tds[i].style.wordBreak = wordBreakType;
+      }
+    };
+
   </script>
 </head>
 
@@ -99,17 +124,25 @@
       <div class="navbar-header">
         <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse"
           type="button">
-<span class="sr-only">Toggle navigation</span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-</button>
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
         <a class="navbar-brand" href="#">| Registrant: geodatabase inventory |</a>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="#">Home</a></li>
-          <li><a href="" onclick="printReport();">Print</a></li>
-          <li><a href="https://github.com/alexarcpy/registrant" target="blank">Help  </a></li>
-          <li><a href="http://glyphicons.com/" target="blank">Glyphicons.com icons</a></li>
+          <li>
+            <a href="#">Home</a>
+          </li>
+          <li>
+            <a href="" onclick="printReport();">Print</a>
+          </li>
+          <li>
+            <a href="https://github.com/alexarcpy/registrant" target="blank">Help </a>
+          </li>
+          <li>
+            <a href="http://glyphicons.com/" target="blank">Glyphicons.com icons</a>
+          </li>
           x
         </ul>
       </div>
@@ -119,14 +152,31 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-3 col-md-2 sidebar">
+        <b>Settings</b>
+        <br>
+        <input id="toggleWordBreak" type="checkbox" />
+        <label for="toggleWordBreak" class="checkBoxLabel">Wrap table rows</label>
+        <hr>
 
         <ul class="nav nav-sidebar">
-          <li class="active"><a class="chapter" href="#overview">Overview</a></li>
-		  <li><a class="chapter" href="#versions">Versions</a></li>
-          <li><a class="chapter" href="#replicas">Replicas</a></li>
-          <li><a class="chapter" href="#domains">Domains</a></li>
-          <li><a class="chapter" href="#tables">Tables</a></li>
-          <li><a class="chapter" href="#fcs">Feature classes</a></li>
+          <li class="active">
+            <a class="chapter" href="#overview">Overview</a>
+          </li>
+          <li>
+            <a class="chapter" href="#versions">Versions</a>
+          </li>
+          <li>
+            <a class="chapter" href="#replicas">Replicas</a>
+          </li>
+          <li>
+            <a class="chapter" href="#domains">Domains</a>
+          </li>
+          <li>
+            <a class="chapter" href="#tables">Tables</a>
+          </li>
+          <li>
+            <a class="chapter" href="#fcs">Feature classes</a>
+          </li>
         </ul>
 
         <b>Domains (coded values)</b>
@@ -149,5 +199,11 @@
   </div>
 
 </body>
+
+<!-- need to have it in the end to let the checkbox be loaded first -->
+<script>
+    document.getElementById("toggleWordBreak").checked = false;
+    document.getElementById("toggleWordBreak").onclick = enableWordBreak;
+</script>
 
 </html>
