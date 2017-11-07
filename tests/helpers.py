@@ -79,15 +79,30 @@ def parse_fcs_from_html(html_file, json_file):
         headers = info.keys()
 
     #test headers of the html table
-    headers_match = set(headers) == set(
-        [th.string for th in fcs_table.findChildren(['th'])[0:3]])
+    html_headers = fcs_table.findChildren(['th'])
+    string_headers = [th.string for th in html_headers]
+
+    if 'Feature dataset' not in string_headers:  # ogr test
+        headers_match = set(headers) == set(
+            [th.string for th in [html_headers[0], html_headers[2], html_headers[3]]])
+    else:  # arcpy test
+        headers_match = set(headers) == set(
+            [th.string for th in [html_headers[0], html_headers[3], html_headers[4]]])
 
     #test row values of the html table
     name, feat_type, shape_type = (info['Name'], info['Feature type'], info['Shape type'])
-    row_values_match = all([
-        name == fcs_table.findChildren(['td'])[0].string,
-        feat_type == fcs_table.findChildren(['td'])[1].string,
-        shape_type == fcs_table.findChildren(['td'])[2].string
-    ])
+
+    if 'Feature dataset' not in string_headers:  # ogr test
+        row_values_match = all([
+            name == fcs_table.findChildren(['td'])[0].string,
+            feat_type == fcs_table.findChildren(['td'])[2].string,
+            shape_type == fcs_table.findChildren(['td'])[3].string
+        ])
+    else:  # arcpy test
+        row_values_match = all([
+            name == fcs_table.findChildren(['td'])[0].string,
+            feat_type == fcs_table.findChildren(['td'])[3].string,
+            shape_type == fcs_table.findChildren(['td'])[4].string
+        ])
 
     return (headers_match, row_values_match)
