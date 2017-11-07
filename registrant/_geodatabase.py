@@ -240,7 +240,6 @@ class Geodatabase(object):
             arcpy.env.workspace = self.path
             for fc in arcpy.ListFeatureClasses():
                 od = self._get_fc_props(fc)
-                od['Feature dataset'] = ''
                 fcs.append(od)
 
         else:
@@ -303,8 +302,13 @@ class Geodatabase(object):
         """return single geodatabase feature class props as ordered dict"""
         fc_instance = FeatureClass(arcpy.Describe(fc).catalogPath)
         od = OrderedDict()
+
+        passed_first_column = False
         for k, v in GDB_FC_PROPS.items():
             od[v] = getattr(fc_instance, k, '')
+            if not passed_first_column:
+                od['Feature dataset'] = ''
+                passed_first_column = True
         #custom props
         od['Row count'] = fc_instance.get_row_count()
         num_attachments = fc_instance.get_attachments_count()

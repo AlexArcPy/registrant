@@ -98,6 +98,21 @@ def report_gdb_as_html(gdb_path,
         report_path=report_file_path)
 
 #------------------------------------------------------------------------------------------------
+#VERSIONS
+#------------------------------------------------------------------------------------------------
+
+    if do_report_versions:
+        versions = gdb.get_versions()
+        if versions:
+            df = map_boolean(pd.DataFrame.from_dict(versions).sort_values(by='Name'))
+
+            _build_html.add_div_to_html_page(
+                df=df,
+                section_header_id="versions",
+                section_title="Versions",
+                report_path=report_file_path)
+
+#------------------------------------------------------------------------------------------------
 #REPLICAS
 #------------------------------------------------------------------------------------------------
 
@@ -112,21 +127,6 @@ def report_gdb_as_html(gdb_path,
                 section_title="Replicas",
                 report_path=report_file_path,
                 escape=False)
-
-#------------------------------------------------------------------------------------------------
-#VERSIONS
-#------------------------------------------------------------------------------------------------
-
-    if do_report_versions:
-        versions = gdb.get_versions()
-        if versions:
-            df = map_boolean(pd.DataFrame.from_dict(versions).sort_values(by='Name'))
-
-            _build_html.add_div_to_html_page(
-                df=df,
-                section_header_id="versions",
-                section_title="Versions",
-                report_path=report_file_path)
 
 #------------------------------------------------------------------------------------------------
 #DOMAINS
@@ -185,6 +185,7 @@ def report_gdb_as_html(gdb_path,
         tables = gdb.get_tables()
         if tables:
             df = map_boolean(pd.DataFrame.from_dict(tables).sort_values(by='Name'))
+            df = df.iloc[df.Name.str.lower().argsort()]  #sort case insensitive
             if do_report_tables:
                 _build_html.add_div_to_html_page(
                     df,
@@ -192,7 +193,7 @@ def report_gdb_as_html(gdb_path,
                     section_title="Tables",
                     report_path=report_file_path)
 
-            for table_name in sorted(df['Name'].values):
+            for table_name in df['Name'].values:
                 #TOC generation
                 _build_html.add_li_to_toc(
                     parent_id="tocTables",
@@ -262,6 +263,7 @@ def report_gdb_as_html(gdb_path,
         fcs = gdb.get_feature_classes()
         if fcs:
             df = map_boolean(pd.DataFrame.from_dict(fcs).sort_values(by='Name'))
+            df = df.iloc[df.Name.str.lower().argsort()]  #sort case insensitive
             if do_report_fcs:
                 _build_html.add_div_to_html_page(
                     df,
@@ -269,7 +271,7 @@ def report_gdb_as_html(gdb_path,
                     section_title="Feature classes",
                     report_path=report_file_path)
 
-            for fc_name in sorted(df['Name'].values):
+            for fc_name in df['Name'].values:
                 #TOC generation
                 _build_html.add_li_to_toc(
                     parent_id="tocFcs",
@@ -338,6 +340,8 @@ def report_gdb_as_html(gdb_path,
 
 gdb2html = partial(
     report_gdb_as_html,
+    do_report_versions=True,
+    do_report_replicas=True,
     do_report_domains=True,
     do_report_domains_coded_values=True,
     do_report_tables=True,
@@ -351,6 +355,8 @@ gdb2html = partial(
 
 domains2html = partial(
     report_gdb_as_html,
+    do_report_versions=False,
+    do_report_replicas=False,
     do_report_domains=True,
     do_report_domains_coded_values=True,
     do_report_tables=False,
@@ -364,6 +370,8 @@ domains2html = partial(
 
 tables2html = partial(
     report_gdb_as_html,
+    do_report_versions=False,
+    do_report_replicas=False,
     do_report_domains=False,
     do_report_domains_coded_values=False,
     do_report_tables=True,
@@ -377,6 +385,8 @@ tables2html = partial(
 
 fcs2html = partial(
     report_gdb_as_html,
+    do_report_versions=False,
+    do_report_replicas=False,
     do_report_domains=False,
     do_report_domains_coded_values=False,
     do_report_tables=False,

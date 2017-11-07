@@ -27,6 +27,14 @@ class Describe(object):
         self.name = self._desc.name
         self.root = os.path.dirname(self.catalogPath)
 
+        if hasattr(arcpy.Describe(self.root), 'datasetType'): # 'FeatureDataset':
+            self.wkspc = os.path.dirname(self.root)
+        else: #FeatureClass
+            self.wkspc = self.root
+
+        if 'Remote' in arcpy.Describe(self.wkspc).workspaceType:
+            self.name = '.'.join(self.name.split('.')[1:])
+
 
 ########################################################################
 class Dataset(Describe):
@@ -36,7 +44,6 @@ class Dataset(Describe):
         """Constructor"""
         Describe.__init__(self, path)
         self.path = path
-        self.datasetType = getattr(self._desc, 'datasetType', '')
         self.changeTracked = getattr(self._desc, 'changeTracked', '')
 
 
@@ -92,6 +99,8 @@ class Table(Dataset):
         self.aliasName = getattr(self._desc, 'aliasName', '')
         self.OIDFieldName = getattr(self._desc, 'OIDFieldName', '')
         self.globalIDFieldName = getattr(self._desc, 'globalIDFieldName', '')
+        self.isVersioned = getattr(self._desc, 'isVersioned', False)
+        self.isArchived = getattr(self._desc, 'isArchived', False)
 
     #----------------------------------------------------------------------
     def get_fields(self):
@@ -168,7 +177,7 @@ class FeatureClass(Table):
         self.hasZ = getattr(self._desc, 'hasZ', '')
         self.hasSpatialIndex = getattr(self._desc, 'hasSpatialIndex', '')
         self.shapeFieldName = getattr(self._desc, 'shapeFieldName', '')
-        self.spatialReference = operator.attrgetter('spatialReference.name')(self._desc)
+        self.spatialReference = operator.attrgetter('spatialReference.factoryCode')(self._desc)
         self.areaFieldName = getattr(self._desc, 'areaFieldName', '')
         self.geometryStorage = getattr(self._desc, 'geometryStorage', '')
         self.lengthFieldName = getattr(self._desc, 'lengthFieldName', '')

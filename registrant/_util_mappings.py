@@ -81,7 +81,8 @@ OGR_GEOMETRY_TYPES = {
 
 GDB_TABLE_PROPS = OrderedDict(
     [('name', 'Name'), ('aliasName', 'Alias'), ('OIDFieldName', 'ObjectID'),
-     ('globalIDFieldName', 'GlobalID'), ('changeTracked', 'Is change tracked')])
+     ('globalIDFieldName', 'GlobalID'), ('changeTracked', 'Is change tracked'),
+     ('isVersioned', 'Is versioned'), ('isArchived', 'Is archived')])
 
 GDB_TABLE_FIELD_PROPS = OrderedDict(
     [('name', 'Name'), ('type', 'Type'), ('aliasName', 'Alias'),
@@ -96,11 +97,22 @@ GDB_TABLE_INDEX_PROPS = OrderedDict([('name', 'Name'), ('fields', 'Fields'),
 GDB_TABLE_SUBTYPE_PROPS = OrderedDict([('Name', 'Name'), ('SubtypeField', 'SubtypeField'),
                                        ('Default', 'Default')])
 
-GDB_FC_PROPS = OrderedDict(
-    [('name', 'Name'), ('featureType', 'Feature type'), ('shapeType', 'Shape type'),
-     ('hasM', 'Has M values'), ('hasZ', 'Has Z values'), ('hasSpatialIndex',
-                                                          'Has spatial index'),
-     ('shapeFieldName', 'Shape field name'), ('spatialReference', 'Spatial reference'),
-     ('areaFieldName', 'Area field'), ('lengthFieldName',
-                                       'Length field'), ('geometryStorage',
-                                                         'Geometry storage')])
+GDB_FC_PROPS = OrderedDict([
+    ('name', 'Name'),
+    ('aliasName', 'Alias'),
+    ('featureType', 'Feature type'),
+    ('shapeType', 'Shape type'),
+    ('spatialReference', 'Spatial reference wkid'),
+    ('isVersioned', 'Is versioned'),
+    ('isArchived', 'Is archived'),
+    ('changeTracked', 'Is change tracked'),
+    ('hasM', 'Has M values'),
+    ('hasZ', 'Has Z values'),
+    ('hasSpatialIndex', 'Has spatial index'),
+    ('OIDFieldName', 'ObjectID'),
+    ('globalIDFieldName', 'GlobalID'),
+    ('geometryStorage', 'Geometry storage'),
+    ('shapeFieldName', 'Shape field name'),
+    ('areaFieldName', 'Area field'),
+    ('lengthFieldName', 'Length field'),
+])
