@@ -110,6 +110,9 @@ Added in v0.2:
 Added in v0.3:
 * Versions in SDE geodatabases (`arcpy` only)
 
+Added in v0.4:
+* Properties `Attachments enabled` and `Attachments count` for tables and feature classes (`arcpy` only)
+
 All fields in tables and feature classes have a property showing the order of the field (`UI order`) within the dataset as shown in the dataset properties window in ArcGIS Desktop or Pro that is the order in which the fields were added. This is the order in which fields appear when you open the Feature Class Properties or Table Properties window in ArcGIS Desktop or when you access the Fields window in ArcGIS Pro.
 
 As a note, Unicode characters are supported in geodatabase table names, field aliases and so forth. The web page should be drawn using the `utf-8` encoding. Should any characters appear strange, make sure you are viewing the report page in the proper encoding:
@@ -124,6 +127,10 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 
 * All columns are sortable (ASC | DESC) with the option to choose a number of entries to show for every data table and use paging. Every section also has the Search panel for text search within the section (e.g., search for the field name in a particular feature class) that will filter out table rows with no matches.
 
+* It is possible to select rows in the data tables (with highlight). Operating system keys such as `Ctrl`/`Shift` can be used for selecting multiple rows. More about [selecting rows in data tables](https://datatables.net/extensions/select/examples/initialisation/blurable.html). 
+
+* It is possible to re-order columns in the data tables by dragging them and dropping in the needed place. More about [re-ordering columns in data tables](https://datatables.net/extensions/colreorder/examples/initialisation/simple.html).
+
 * All feature classes have a single default subtype defined for them, so to save the space the information about subtypes will be reported only when there are at least two subtypes (which means at least one subtype has been added by the user).
 
 * By using the `Print` link one can create a printable representation of the report; opening printable report can take some time depending on the number of items in your geodatabase. The report page will be visible in the new browser tab `about:blank`. The generation of printable report works best in Firefox. Please mind that Chrome and IE can choke when the report content is very large.
@@ -133,7 +140,7 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 take each domain > list all tables/fcs that use this domain > list all fields that have this domain assigned > count rows using domain value group by code
 
 #### Report design
-* Reorder columns within the data tables https://datatables.net/extensions/colreorder/
+* Pick what columns to show in each data table using [Buttons](https://datatables.net/extensions/buttons/examples/) extension. 
 
 #### Report contents
 * Add mapping for `arcpy.Field` data types and ArcGIS Desktop (String - Text etc)

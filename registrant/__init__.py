@@ -1,2 +1,2 @@
-__version__ = "0.3"
+__version__ = "0.4"
 from ._reporter import domains2html, fcs2html, tables2html, gdb2html, report_gdb_as_html
