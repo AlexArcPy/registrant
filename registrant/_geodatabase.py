@@ -21,7 +21,7 @@ from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
 from ._util_mappings import (GDB_RELEASE, GDB_WKSPC_TYPE, GDB_PROPS, GDB_DOMAIN_PROPS,
                              GDB_REPLICA_PROPS, GDB_VERSION_PROPS, GDB_TABLE_PROPS,
                              GDB_FC_PROPS, OGR_GDB_DOMAIN_PROPS,
-                             OGR_DOMAIN_PROPS_MAPPINGS)
+                             OGR_DOMAIN_PROPS_MAPPINGS, GDB_RELATIONSHIP_CLASS_PROPS)
 
 
 ########################################################################
@@ -117,6 +117,40 @@ class Geodatabase(object):
                 versions_props.append(od)
 
         return versions_props
+
+    #----------------------------------------------------------------------
+    def get_relationship_classes(self):
+        """return geodatabase relationship classes objects as ordered dict"""
+        rc_props = []
+        if arcpy_found and self.is_gdb_enabled:
+            for gdb_path, fd, rcs in arcpy.da.Walk(
+                    self.path, datatype='RelationshipClass'):
+                for rc in rcs:
+                    rc_desc = arcpy.Describe(os.path.join(gdb_path, rc))
+
+                    od = OrderedDict()
+                    od['Name'] = rc
+                    if os.path.basename(gdb_path) != os.path.basename(self.path):
+                        # rc is inside a feature dataset
+                        od['Feature dataset'] = os.path.basename(gdb_path)
+                    else:
+                        od['Feature dataset'] = ''
+
+                    for k, v in GDB_RELATIONSHIP_CLASS_PROPS.items():
+                        prop_value = getattr(rc_desc, k, '')
+                        if prop_value or isinstance(prop_value, bool):
+                            if isinstance(prop_value, list):
+                                if isinstance(prop_value[0], tuple):
+                                    od[v] = prop_value
+                                else:
+                                    od[v] = ', '.join(prop_value)
+                            else:
+                                od[v] = prop_value
+                        else:
+                            od[v] = ''
+                    rc_props.append(od)
+
+        return rc_props
 
     #----------------------------------------------------------------------
     def get_domains(self):

@@ -32,6 +32,23 @@ GDB_VERSION_PROPS = OrderedDict(
      ('access', 'Access'), ('ancestors', 'Ancestors'), ('children', 'Children'),
      ('isOwner', 'Is owner'), ('created', 'Created'), ('lastModified', 'Last modified')])
 
+GDB_RELATIONSHIP_CLASS_PROPS = OrderedDict(
+    [('originClassNames',
+      'Origin class names'), ('destinationClassNames',
+                              'Destination class names'), ('forwardPathLabel',
+                                                           'Forward path label'),
+     ('backwardPathLabel',
+      'Backward path label'), ('cardinality', 'Cardinality'), ('keyType', 'Key type'),
+     ('classKey', 'Class key'), ('originClassKeys',
+                                 'Origin class keys'), ('destinationClassKeys',
+                                                        'Destination class keys'),
+     ('isAttachmentRelationship',
+      'Is attachment relationship'), ('isAttributed', 'Is attributed'), ('isComposite',
+                                                                         'Is composite'),
+     ('isReflexive', 'Is reflexive'), ('notification',
+                                       'Notification'), ('relationshipRules',
+                                                         'Relationship rules')])
+
 GDB_DOMAIN_PROPS = OrderedDict(
     [('owner', 'Owner'), ('name', 'Name'), ('domainType', 'Domain type'),
      ('description', 'Description'), ('codedValues', 'Coded values'), ('mergePolicy',

@@ -40,6 +40,7 @@ def report_gdb_as_html(gdb_path,
                        do_report_replicas=True,
                        do_report_domains=True,
                        do_report_domains_coded_values=True,
+                       do_report_relclasses=True,
                        do_report_tables=True,
                        do_report_tables_fields=True,
                        do_report_tables_subtypes=True,
@@ -175,6 +176,22 @@ def report_gdb_as_html(gdb_path,
                         section_title=domain_name,
                         header_size='h3',
                         report_path=report_file_path)
+
+#------------------------------------------------------------------------------------------------
+#RELATIONSHIP CLASSES
+#------------------------------------------------------------------------------------------------
+
+    if do_report_relclasses:
+        rel_classes = gdb.get_relationship_classes()
+        if rel_classes:
+            df = map_boolean(pd.DataFrame.from_dict(rel_classes).sort_values(by='Name'))
+
+            _build_html.add_div_to_html_page(
+                df=df,
+                section_header_id="relclasses",
+                section_title="Relationship classes",
+                report_path=report_file_path,
+                escape=False)
 
 #------------------------------------------------------------------------------------------------
 #TABLES
