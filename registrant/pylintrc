@@ -1,4 +1,8 @@
 [TYPECHECK]
-generated-members = arcpy.da.ListReplicas, arcpy.da.ListVersions, arcpy.da.ListDomains, arcpy.da.ListSubtypes, arcpy.da.Walk
+generated-members = arcpy.da.ListReplicas,
+    arcpy.da.ListVersions,
+    arcpy.da.ListDomains,
+    arcpy.da.ListSubtypes,
+    arcpy.da.Walk
 
 good-names=df
