@@ -9,10 +9,11 @@ Example of report:
 ### Usage guidelines
 
 In order to use this tool, you would need to have *either*:
+
 * ArcGIS Desktop, ArcGIS Server or ArcGIS Pro installed (for `arcpy` package). You will be able to run the tool with ArcGIS Desktop/Server Python 2.7 as well as ArcGIS Pro Python 3.5+.
 * GDAL (for `ogr` package). This means you will be able to run the tool without having any Esri software installed. However, only file geodatabases are supported for reporting with GDAL.
 
-The code written is a valid Python 2 as well as Python 3 code, so using the tool in both environments is supported. You will need `pandas` and `beatifulSoup` Python packages which can be installed from `pip` if you are ArcGIS Desktop/Server user or using `conda` if you are ArcGIS Pro or Anaconda user. See [Installing Packages ](https://packaging.python.org/tutorials/installing-packages/) in the Python documentation (for ArcGIS Desktop users) and [Install a package](https://conda.io/docs/using/pkgs.html#install-a-package) in the Conda documentation (for ArcGIS Pro and Anaconda users) to get help.
+The code written is a valid Python 2 as well as Python 3 code, so using the tool in both environments is supported. You will need `pandas` and `beatifulSoup` Python packages which can be installed from `pip` if you are ArcGIS Desktop/Server user or using `conda` if you are ArcGIS Pro or Anaconda user. See [Installing Packages](https://packaging.python.org/tutorials/installing-packages/) in the Python documentation (for ArcGIS Desktop users) and [Install a package](https://conda.io/docs/using/pkgs.html#install-a-package) in the Conda documentation (for ArcGIS Pro and Anaconda users) to get help.
 
 If the package is able to import `arcpy`, then it will use `arcpy` because it provides a more complete view into your geodatabase. The most time is spent in `arcpy` describe and listing functions iterating the datasets and pulling all the relevant information.
 
@@ -43,14 +44,14 @@ The package has convenience functions which can be used to specify what exactly 
 
 To generate full geodatabase report:
 
-```
+```python
 import registrant
 registrant.gdb2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder")
 ```
 
 To generate report listing only tables and feature classes (with no information on fields, subtypes, and indexes):
 
-```
+```python
 import registrant
 registrant.report_gdb_as_html(r"C:\GIS\Production.gdb",
                             r"C:\GIS\ReportFolderTablesFcs",
@@ -68,7 +69,7 @@ registrant.report_gdb_as_html(r"C:\GIS\Production.gdb",
 
 To generate report listing only domains and coded values for domains:
 
-```
+```python
 import registrant
 registrant.domains2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolderDomains")
 ```
@@ -95,6 +96,10 @@ This tool uses `arcpy` package (and if you don't have any ArcGIS software instal
 
     If you need to produce HTML reports fairly often and performance does matter to you, try to leave out some of the report options to save time. You could, for instance, skip reporting indexes and subtypes for every table and feature class if you have a large number of datasets in your geodatabase.
 
+* I have no Esri software and no GDAL/OGR installed. Can I generate the report of my SQL Server/Oracle/MySQL/PostgreSQL/etc database anyway?
+
+    No, you cannot because the package expects to be able to pull all the information about the tables and columns using either `arcpy` which comes with ArcGIS software or OGR which comes together with GDAL Python bindings. However, there are many other programs that will be able to generate the schema report among many other things. Take a look at [SchemaSpy](http://schemaspy.org/sample/index.html), for instance.
+
 ### Report contents
 
 * General geodatabase overview
@@ -105,12 +110,15 @@ This tool uses `arcpy` package (and if you don't have any ArcGIS software instal
 * Table & Feature class indexes (`arcpy` only)
 
 Added in v0.2:
+
 * Replicas and replicas' datasets (`arcpy` only)
 
 Added in v0.3:
+
 * Versions in SDE geodatabases (`arcpy` only)
 
 Added in v0.4:
+
 * Properties `Attachments enabled` and `Attachments count` for tables and feature classes (`arcpy` only)
 
 All fields in tables and feature classes have a property showing the order of the field (`UI order`) within the dataset as shown in the dataset properties window in ArcGIS Desktop or Pro that is the order in which the fields were added. This is the order in which fields appear when you open the Feature Class Properties or Table Properties window in ArcGIS Desktop or when you access the Fields window in ArcGIS Pro.
@@ -127,9 +135,11 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 
 * All columns are sortable (ASC | DESC) with the option to choose a number of entries to show for every data table and use paging. Every section also has the Search panel for text search within the section (e.g., search for the field name in a particular feature class) that will filter out table rows with no matches.
 
-* It is possible to select rows in the data tables (with highlight). Operating system keys such as `Ctrl`/`Shift` can be used for selecting multiple rows. More about [selecting rows in data tables](https://datatables.net/extensions/select/examples/initialisation/blurable.html). 
+* It is possible to select rows in the data tables (with highlight). Operating system keys such as `Ctrl`/`Shift` can be used for selecting multiple rows. More about [selecting rows in data tables](https://datatables.net/extensions/select/examples/initialisation/blurable.html).
 
 * It is possible to re-order columns in the data tables by dragging them and dropping in the needed place. More about [re-ordering columns in data tables](https://datatables.net/extensions/colreorder/examples/initialisation/simple.html).
+
+* It is possible to enable toggle word break in the data tables cells which can be handy for cells with long words (the checkbox is found in the upper-left corner of the left panel).
 
 * All feature classes have a single default subtype defined for them, so to save the space the information about subtypes will be reported only when there are at least two subtypes (which means at least one subtype has been added by the user).
 
@@ -139,20 +149,20 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 
 take each domain > list all tables/fcs that use this domain > list all fields that have this domain assigned > count rows using domain value group by code
 
-#### Report design
-* Pick what columns to show in each data table using [Buttons](https://datatables.net/extensions/buttons/examples/) extension. 
+#### Report design and contents
 
-#### Report contents
+* Pick what columns to show in each data table using [Buttons](https://datatables.net/extensions/buttons/examples/) extension.
+
 * Add mapping for `arcpy.Field` data types and ArcGIS Desktop (String - Text etc)
 
 ### Running tests locally
 
 1. Cd to the `tests` folder and run `coverage run -m unittest discover`. This will create a `.coverage` file which contains the metadata about code coverage.
 
-2. Cd to the `tests` folder and run `coverage html -d coverage_html --omit "C:\Program Files (x86)\ArcGIS\Desktop10.5\*"`. This will generate a nice `.html` report highlighting the covered code. The `--omit` flag is used to exclude calls to `arcpy` in the report.
+1. Cd to the `tests` folder and run `coverage html -d coverage_html --omit "C:\Program Files (x86)\ArcGIS\Desktop10.5\*"`. This will generate a nice `.html` report highlighting the covered code. The `--omit` flag is used to exclude calls to `arcpy` in the report.
 
 Keep in mind that you need to make sure that `arcpy` is not found when you run tests for OGR as this will make the tests fail.
-In Wing IDE, right-click OGR test files > File Properties menu > Testing tab > choose empty `Custom` for Python path for the Python environments used to run the OGR tests (Anaconda env). This won't let get ArcGIS paths added to the sys.path.
+In Wing IDE, right-click OGR test files > File Properties menu > Testing tab > choose empty `Custom` for Python path for the Python environments used to run the OGR tests (Anaconda env). This will make sure ArcGIS paths won't be added to the `sys.path`.
 
 ### Issues
 
