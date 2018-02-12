@@ -133,3 +133,6 @@ GDB_FC_PROPS = OrderedDict([
     ('areaFieldName', 'Area field'),
     ('lengthFieldName', 'Length field'),
 ])
+
+STRING_TO_BOOLEAN = {'false': False, 'true': True}
+BOOL_TO_YESNO_MAPPER = {True: 'Yes', False: 'No'}

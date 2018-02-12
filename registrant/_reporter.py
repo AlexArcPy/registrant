@@ -8,6 +8,7 @@ import shutil
 import datetime
 from functools import partial
 import pandas as pd
+from . import _util_mappings as utils
 
 from . import _geodatabase as GDB
 from . import _build_html
@@ -17,8 +18,6 @@ from ._config import REPORT_DATA_FOLDER_PATH, REPORT_FILE_NAME
 
 pd.set_option('display.max_rows', 20)
 pd.set_option('display.width', 250)
-
-BOOL_MAPPER = {True: 'Yes', False: 'No'}
 
 try:
     import arcpy
@@ -30,7 +29,7 @@ except:
 #----------------------------------------------------------------------
 def map_boolean(df):
     r"""maps data frame boolean columns to get `Yes`\`No` from `True`\`False`"""
-    return df.replace({c: BOOL_MAPPER for c in df.select_dtypes([bool])})
+    return df.replace({c: utils.BOOL_TO_YESNO_MAPPER for c in df.select_dtypes([bool])})
 
 
 #----------------------------------------------------------------------
@@ -63,6 +62,8 @@ def report_gdb_as_html(gdb_path,
         out_report_folder_path=r"C:\GIS\ReportFolder")
 
     """
+    if not arcpy_found and not gdb_path.endswith('.gdb'):
+        raise ValueError("Only file geodatabases are currently supported for used with GDAL/OGR")
 
     out_report_app_folder = os.path.join(out_report_folder_path,
                                          os.path.basename(REPORT_DATA_FOLDER_PATH))

@@ -4,6 +4,7 @@ Classes for data objects representing items stored in a geodatabase
 import os
 import operator
 from collections import OrderedDict
+
 try:
     import arcpy
     arcpy_found = True
@@ -12,7 +13,8 @@ except:
     arcpy_found = False
 
 from ._util_mappings import (GDB_TABLE_FIELD_PROPS, GDB_TABLE_INDEX_PROPS,
-                             GDB_TABLE_SUBTYPE_PROPS, OGR_GEOMETRY_TYPES)
+                             GDB_TABLE_SUBTYPE_PROPS, OGR_GEOMETRY_TYPES,
+                             STRING_TO_BOOLEAN, BOOL_TO_YESNO_MAPPER)
 
 
 ########################################################################
@@ -27,9 +29,9 @@ class Describe(object):
         self.name = self._desc.name
         self.root = os.path.dirname(self.catalogPath)
 
-        if hasattr(arcpy.Describe(self.root), 'datasetType'): # 'FeatureDataset':
+        if hasattr(arcpy.Describe(self.root), 'datasetType'):  # 'FeatureDataset':
             self.wkspc = os.path.dirname(self.root)
-        else: #FeatureClass
+        else:  #FeatureClass
             self.wkspc = self.root
 
         if 'Remote' in arcpy.Describe(self.wkspc).workspaceType:
@@ -177,7 +179,8 @@ class FeatureClass(Table):
         self.hasZ = getattr(self._desc, 'hasZ', '')
         self.hasSpatialIndex = getattr(self._desc, 'hasSpatialIndex', '')
         self.shapeFieldName = getattr(self._desc, 'shapeFieldName', '')
-        self.spatialReference = operator.attrgetter('spatialReference.factoryCode')(self._desc)
+        self.spatialReference = operator.attrgetter('spatialReference.factoryCode')(
+            self._desc)
         self.areaFieldName = getattr(self._desc, 'areaFieldName', '')
         self.geometryStorage = getattr(self._desc, 'geometryStorage', '')
         self.lengthFieldName = getattr(self._desc, 'lengthFieldName', '')

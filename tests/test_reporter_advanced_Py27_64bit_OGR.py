@@ -1,6 +1,6 @@
 '''
-Running basic tests generating html files for
-a dummy geodatabase with a single domain
+Running advanced tests generating html files for
+geodatabase domains, tables, and feature classes
 '''
 from __future__ import print_function
 
