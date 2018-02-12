@@ -224,7 +224,7 @@ def report_gdb_as_html(gdb_path,
                     if arcpy_found:
                         tbl = Table(os.path.join(gdb.path, table_name))
                     else:
-                        tbl = TableOgr(gdb.path, table_name)
+                        tbl = TableOgr(gdb, table_name)
                     df_fields = map_boolean(pd.DataFrame.from_dict(tbl.get_fields()))
                     #when there is a table with no fields
                     if not df_fields.empty:
@@ -301,7 +301,7 @@ def report_gdb_as_html(gdb_path,
                     if arcpy_found:
                         fc = FeatureClass(os.path.join(gdb.path, fc_name))
                     else:
-                        fc = FeatureClassOgr(gdb.path, fc_name)
+                        fc = FeatureClassOgr(gdb, fc_name)
                     df_fields = map_boolean(pd.DataFrame.from_dict(fc.get_fields()))
 
                     #when there is a feature class with no fields

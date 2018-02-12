@@ -7,13 +7,13 @@
 
     "tables": {
         "Name": "Table1",
-        "Alias": null,
+        "Alias": "Table1",
         "ObjectID": "OBJECTID"
     },
 
     "fcs": {
         "Name": "Fc1",
-        "Feature type": null,
+        "Feature type": "Simple",
         "Shape type": "MultiPolygon"
     }
 }

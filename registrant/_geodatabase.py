@@ -31,6 +31,8 @@ class Geodatabase(object):
     def __init__(self, path):
         """Constructor"""
         self.path = path
+        self.ds = self._get_gdb_ds()
+        self.metadata = self._get_ogr_metadata_full()
         self.release = self._get_release()
         self.wkspc_type = self._get_wkspc_type()
         self.is_gdb_enabled = True if self.release else False
@@ -235,14 +237,14 @@ class Geodatabase(object):
                     print("Error. Could not read table", tbl, ". Reason: ", e)
 
         else:
-            ds = ogr.Open(self.path, 0)
             table_names = [
-                ds.GetLayerByIndex(i).GetName() for i in range(0, ds.GetLayerCount())
-                if not ds.GetLayerByIndex(i).GetGeometryColumn()
+                self.ds.GetLayerByIndex(i).GetName()
+                for i in range(0, self.ds.GetLayerCount())
+                if not self.ds.GetLayerByIndex(i).GetGeometryColumn()
             ]
             for table_name in table_names:
                 try:
-                    tbl_instance = TableOgr(self.path, table_name)
+                    tbl_instance = TableOgr(self, table_name)
                     od = OrderedDict()
                     for k, v in GDB_TABLE_PROPS.items():
                         od[v] = getattr(tbl_instance, k, '')
@@ -284,7 +286,7 @@ class Geodatabase(object):
             ]
             for fc_name in fcs_names:
                 try:
-                    fc_instance = FeatureClassOgr(self.path, fc_name)
+                    fc_instance = FeatureClassOgr(self, fc_name)
                     od = OrderedDict()
                     for k, v in GDB_FC_PROPS.items():
                         od[v] = getattr(fc_instance, k, '')
@@ -296,38 +298,46 @@ class Geodatabase(object):
         return fcs
 
     #----------------------------------------------------------------------
-    def _ogr_get_gdb_metadata(self):
-        """return an xml object with the geodatabase metadata"""
-        ds = ogr.Open(self.path, 0)
-        res = ds.ExecuteSQL('select * from GDB_Items')
-        res.CommitTransaction()
-
-        for i in xrange(0, res.GetFeatureCount()):
-            item = json.loads(
-                res.GetNextFeature().ExportToJson())['properties']['Definition']
-            if item:
-                xml = ET.fromstring(item)
-                if xml.tag == 'DEWorkspace':
-                    break
-        del ds
-        return xml
+    def _get_gdb_ds(self):
+        """return the geodatabase OGR data source object"""
+        if not arcpy_found:
+            return ogr.Open(self.path, 0)
 
     #----------------------------------------------------------------------
+    def _get_ogr_metadata_full(self):
+        """return the full geodatabase metadata as a list of xml objects"""
+        metadata = None
+        if not arcpy_found:
+            res = self.ds.ExecuteSQL('select * from GDB_Items')
+            res.CommitTransaction()
+            metadata = []
+            for i in range(0, res.GetFeatureCount()):
+                item = json.loads(
+                    res.GetNextFeature().ExportToJson())['properties']['Definition']
+                if item:
+                    xml = ET.fromstring(item)
+                    metadata.append(xml)
+        return metadata
+
+    #----------------------------------------------------------------------
+    def _ogr_get_fcs(self):
+        """return an xml object with the geodatabase feature classes metadata"""
+        pass
+
+    #----------------------------------------------------------------------
+    def _ogr_get_geodatabase(self):
+        """return an xml object with the metadata about the geodatabase repository"""
+        for item in self.metadata:
+            if item.tag == 'DEWorkspace':
+                return item
+
+        #----------------------------------------------------------------------
     def _ogr_get_domains(self):
         """return an xml object with the geodatase domains metadata"""
-        ds = ogr.Open(self.path, 0)
-        res = ds.ExecuteSQL('select * from GDB_Items')
-        res.CommitTransaction()
-
         domains = defaultdict(list)
-        for i in xrange(0, res.GetFeatureCount()):
-            item = json.loads(
-                res.GetNextFeature().ExportToJson())['properties']['Definition']
-            if item:
-                xml = ET.fromstring(item)
-                if xml.tag in ('GPCodedValueDomain2', 'GPRangeDomain2'):
-                    domains[xml.tag].append(xml)
-        del ds
+        for item in self.metadata:
+            if item.tag in ('GPCodedValueDomain2', 'GPRangeDomain2'):
+                domains[item.tag].append(item)
         return domains
 
     #----------------------------------------------------------------------
@@ -362,7 +372,7 @@ class Geodatabase(object):
         if arcpy_found:
             return GDB_RELEASE.get(arcpy.Describe(self.path).release, '')
         else:
-            xml = self._ogr_get_gdb_metadata()
+            xml = self._ogr_get_geodatabase()
             return GDB_RELEASE.get(','.join([
                 xml.find('MajorVersion').text,
                 xml.find('MinorVersion').text,
