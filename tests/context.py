@@ -5,6 +5,8 @@ import os
 import struct
 import tempfile
 import pkgutil
+import tempfile
+import zipfile
 
 # adding the project folder to support running test files individually and
 # from the IDE
@@ -15,6 +17,11 @@ try:
 except BaseException:
     import registrant  # noqa: F401
 
+temp_dir = tempfile.gettempdir()
+for gdb_zip in [r'data\Adv_ogr_gdb.zip', r'data\Basic_ogr_gdb.zip']:
+    zip_ref = zipfile.ZipFile(gdb_zip, 'r')
+    zip_ref.extractall(temp_dir)
+    zip_ref.close()
 
 NO_OGR_ENV_MESSAGE = """
 Running tests with Python installation with no ogr available"""
@@ -35,12 +42,12 @@ TEST_CONFIG = {
     'Basic_ogr': {
         'name': 'Basic_ogr',
         'json_results': r'data\Basic_ogr.json',
-        'ogr_geodatabase': r'data\Basic_ogr.gdb',
+        'ogr_geodatabase': os.path.join(temp_dir, 'Basic_ogr.gdb'),
     },
     'Advanced_ogr': {
         'name': 'Adv_ogr',
         'json_results': r'data\Adv_ogr.json',
-        'ogr_geodatabase': r'data\Adv_ogr.gdb',
+        'ogr_geodatabase': os.path.join(temp_dir, 'Adv_ogr.gdb'),
     },
     'Complete': {
         'name': 'Complete',
