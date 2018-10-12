@@ -104,10 +104,6 @@ ENV/
 *.wpr
 *.wpu
 
-# styles and linters
-*.yapf
-*.cfg
-
 # geodatabases
 *.gdb
 debugger.py
