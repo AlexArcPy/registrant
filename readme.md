@@ -38,40 +38,55 @@ Please keep in mind that `arcpy` and `GDAL` won't be installed when installing t
 
 ### Getting started
 
-When calling the reporting function, you'd need to supply path to your geodatabase and output folder for report data files, and optionally specify what information you would like to include into your output HTML report. Depending on the geodatabase size, number of chosen items to include in the report as well as the available system resources, it might take some minutes to run.
+When creating a `Reporter` class, you'd need to supply path to your geodatabase and output folder for report data files. Then, calling `Reporter.gdb2html()` would let you optionally specify what information you would like to include into your output HTML report. Depending on the geodatabase size, number of chosen items to include in the report as well as the available system resources, it might take some minutes to run.
 
-The package has convenience functions which can be used to specify what exactly do you want to generate report for. The `gdb2html` function will create a complete report. However, you can specify if you want to report only domains, only tables, or only feature classes using the `domains2html`, `tables2html`, and `fcs2html` functions respectively. If you would like to have a fine-grained control over what information will be included in the report, you can use `report_gdb_as_html` function which has a few booleans you can set (for instance, you may want to get only list of tables and feature classes without reporting their fields, subtypes, and indexes).
+The package has convenience functions which can be used to specify what exactly do you want to generate report for. The `gdb2html` function will create a complete report. This function provides you with fine-grained control over what information will be included in the report, so you can use it providing booleans arguments (for instance, you may want to get only list of tables and feature classes without reporting their fields, subtypes, and indexes). However, you can specify if you want to report only domains, only tables, or only feature classes using the `domains2html`, `tables2html`, and `fcs2html` functions respectively.
 
 To generate full geodatabase report:
 
 ```python
 import registrant
-registrant.gdb2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder")
+reporter = registrant.Reporter(
+    r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder"
+)
+reporter.gdb2html()
+print(reporter.report_file_path)
 ```
 
 To generate report listing only tables and feature classes (with no information on fields, subtypes, and indexes):
 
 ```python
 import registrant
-registrant.report_gdb_as_html(r"C:\GIS\Production.gdb",
-                            r"C:\GIS\ReportFolderTablesFcs",
-                            do_report_domains=False,
-                            do_report_domains_coded_values=False,
-                            do_report_tables=True,
-                            do_report_tables_fields=False,
-                            do_report_tables_subtypes=False,
-                            do_report_tables_indexes=False,
-                            do_report_fcs=True,
-                            do_report_fcs_fields=False,
-                            do_report_fcs_subtypes=False,
-                            do_report_fcs_indexes=False)
+reporter = registrant.Reporter(
+    r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder"
+)
+reporter.gdb2html(
+    do_report_versions=False,
+    do_report_replicas=False,
+    do_report_domains=False,
+    do_report_domains_coded_values=False,
+    do_report_relclasses=False,
+    do_report_tables=True,
+    do_report_tables_fields=False,
+    do_report_tables_subtypes=False,
+    do_report_tables_indexes=False,
+    do_report_fcs=True,
+    do_report_fcs_fields=False,
+    do_report_fcs_subtypes=False,
+    do_report_fcs_indexes=False,
+)
+print(reporter.report_file_path)
+
 ```
 
 To generate report listing only domains and coded values for domains:
 
 ```python
 import registrant
-registrant.domains2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolderDomains")
+reporter = registrant.Reporter(
+    r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder"
+)
+registrant.domains2html()
 ```
 
 ### Architecture
@@ -155,7 +170,7 @@ As a note, Unicode characters are supported in geodatabase table names, field al
 
 ### New functionality under consideration
 
-take each domain > list all tables/fcs that use this domain > list all fields that have this domain assigned > count rows using domain value group by code
+Take each domain > list all tables/fcs that use this domain > list all fields that have this domain assigned > count rows using domain value group by code
 
 #### Report design and contents
 
@@ -167,7 +182,7 @@ take each domain > list all tables/fcs that use this domain > list all fields th
 
 1. Cd to the `tests` folder and run `coverage run -m unittest discover`. This will create a `.coverage` file which contains the metadata about code coverage.
 
-1. Cd to the `tests` folder and run `coverage html -d coverage_html --omit "C:\Program Files (x86)\ArcGIS\Desktop10.5\*"`. This will generate a nice `.html` report highlighting the covered code. The `--omit` flag is used to exclude calls to `arcpy` in the report.
+2. Cd to the `tests` folder and run `coverage html -d coverage_html`. This will generate a nice `.html` report highlighting the covered code. Calls to `arcpy` are excluded in the report thanks to the `.coveragerc` file.
 
 Keep in mind that you need to make sure that `arcpy` is not found when you run tests for OGR as this will make the tests fail.
 In Wing IDE, right-click OGR test files > `File Properties` menu > `Testing` tab > choose empty `Custom` for Python path for the Python environments used to run the OGR tests (Anaconda env). This will make sure ArcGIS paths won't be added to the `sys.path`.

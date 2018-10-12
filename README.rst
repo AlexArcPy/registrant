@@ -9,6 +9,8 @@ Features
 This Python package will generate an interactive HTML report file with the information about the geodatabase (personal, file, or SDE) itself along with information about datasets stored within the geodatabase. The report includes information about the following:
 
 * General geodatabase overview
+* Enterprise geodatabase versions
+* Enterprise and local geodatabase replicas
 * Domains & coded values
 * Tables & Feature classes
 * Table & Feature class fields
@@ -26,39 +28,18 @@ ArcGIS Pro user.
 Getting started
 ---------------
 
-The package has convenience functions which can be used to specify what exactly do you want to generate report for. The ``gdb2html`` function will create a complete report. However, you can specify if you want to report only domains, only tables, or only feature classes using the ``domains2html``, ``tables2html``, and ``fcs2html`` functions respectively. If you would like to have a fine-grained control over what information will be included in the report, you can use ``report_gdb_as_html`` function which has a few booleans you can set (for instance, you may want to get only list of tables and feature classes without reporting their fields, subtypes, and indexes). 
+The package has convenience functions which can be used to specify what exactly do you want to generate report for. The ``gdb2html`` function will create a complete report. This function provides you with fine-grained control over what information will be included in the report, so you can use it providing booleans arguments (for instance, you may want to get only list of tables and feature classes without reporting their fields, subtypes, and indexes). However, you can specify if you want to report only domains, only tables, or only feature classes using the ``domains2html``, ``tables2html``, and ``fcs2html`` convenience functions respectively.
 
 To generate full geodatabase report:
 
 .. code::
 
     import registrant
-    registrant.gdb2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder")
-
-To generate report listing only tables and feature classes (with no information on fields, subtypes, and indexes):
-
-.. code::
-
-    import registrant
-    registrant.report_gdb_as_html(r"C:\GIS\Production.gdb",
-                                r"C:\GIS\ReportFolderTablesFcs",
-                                do_report_domains=False,
-                                do_report_domains_coded_values=False,
-                                do_report_tables=True,
-                                do_report_tables_fields=False,
-                                do_report_tables_subtypes=False,
-                                do_report_tables_indexes=False,
-                                do_report_fcs=True,
-                                do_report_fcs_fields=False,
-                                do_report_fcs_subtypes=False,
-                                do_report_fcs_indexes=False)
-
-To generate report listing only domains and coded values for domains:
-
-.. code::
-
-    import registrant
-    registrant.domains2html(r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolderDomains")
+    reporter = registrant.Reporter(
+        r"C:\GIS\Production.gdb", r"C:\GIS\ReportFolder"
+    )
+    reporter.gdb2html()
+    print(reporter.report_file_path)
 
 Issues
 ------
