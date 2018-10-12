@@ -1,35 +1,53 @@
-'''
-Geodatabase class representing an Esri geodatabase
-'''
+# -*- coding: UTF-8 -*-
+"""Geodatabase class representing an Esri geodatabase."""
 from __future__ import print_function
 import os
 import datetime
 import tempfile
-import xml.etree.ElementTree as ET
+import pkgutil
+
+from xml.etree import ElementTree
 from collections import OrderedDict, defaultdict
 
-try:
+arcpy_loader = pkgutil.find_loader('arcpy')
+if arcpy_loader:
     import arcpy
-    arcpy_found = True
     arcpy.env.overwriteOutput = True
-except:
+    arcpy_found = True
+else:
     arcpy_found = False
     import ogr
     import json
 
-from ._data_objects import Table, TableOgr, FeatureClass, FeatureClassOgr
-from ._util_mappings import (GDB_RELEASE, GDB_WKSPC_TYPE, GDB_PROPS, GDB_DOMAIN_PROPS,
-                             GDB_REPLICA_PROPS, GDB_VERSION_PROPS, GDB_TABLE_PROPS,
-                             GDB_FC_PROPS, OGR_GDB_DOMAIN_PROPS,
-                             OGR_DOMAIN_PROPS_MAPPINGS, GDB_RELATIONSHIP_CLASS_PROPS)
+from registrant._data_objects import (
+    Table,
+    TableOgr,
+    FeatureClass,
+    FeatureClassOgr,
+)
+from registrant._util_mappings import (
+    GDB_RELEASE,
+    GDB_WKSPC_TYPE,
+    GDB_PROPS,
+    GDB_DOMAIN_PROPS,
+    GDB_REPLICA_PROPS,
+    GDB_VERSION_PROPS,
+    GDB_TABLE_PROPS,
+    GDB_FC_PROPS,
+    OGR_GDB_DOMAIN_PROPS,
+    OGR_DOMAIN_PROPS_MAPPINGS,
+    GDB_RELATIONSHIP_CLASS_PROPS,
+)
+from registrant._config import ESRI_GDB_REPLICA_INF_DATE
 
 
 ########################################################################
 class Geodatabase(object):
-    """Geodatabase object"""
+    """Geodatabase object."""
 
     def __init__(self, path):
-        """Constructor"""
+        """Initialize `Geodatabase` object with basic properties."""
+        self.arcpy_found = arcpy_found
         self.path = path
         self.ds = self._get_gdb_ds()
         self.metadata = self._get_ogr_metadata_full()
@@ -37,19 +55,19 @@ class Geodatabase(object):
         self.wkspc_type = self._get_wkspc_type()
         self.is_gdb_enabled = True if self.release else False
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_pretty_props(self):
-        """get pretty properties as ordered dict"""
+        """Get pretty properties as ordered dict."""
         od = OrderedDict()
         for k, v in GDB_PROPS.items():
             od[v] = self.__dict__[k]
         return od
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_replicas(self):
-        """return geodatabase replicas as ordered dict"""
+        """Get geodatabase replicas as ordered dict."""
         replicas_props = []
-        if arcpy_found and self.is_gdb_enabled:
+        if self.arcpy_found and self.is_gdb_enabled:
             # due to bug in arcpy, cannot use da.ListReplicas date properties
             # `lastSend` and `lastReceive` for file/personal geodatabases
             # because it crashes the Python process
@@ -61,58 +79,71 @@ class Geodatabase(object):
                         od[v] = 'Not available'
                     else:
                         prop_value = getattr(replica, k, '')
-                        if isinstance(prop_value,
-                                      datetime.datetime) and prop_value.year == 1899:
+                        if isinstance(
+                                prop_value, datetime.datetime
+                        ) and prop_value.year == ESRI_GDB_REPLICA_INF_DATE:
                             od[v] = ''
                         else:
-                            if prop_value != None:
+                            if prop_value is not None:
                                 od[v] = prop_value
                             else:
                                 od[v] = ''
 
-                # need at least Standard license of ArcGIS Desktop to run this GP tool
+                # need at least Standard license of ArcGIS Desktop
+                # to run this GP tool
                 if arcpy.ProductInfo() in ('ArcEditor', 'ArcInfo'):
+                    if not hasattr(arcpy, 'ExportReplicaSchema_management'):
+                        # ArcGIS Pro at 1.2 did not have this GP tool
+                        return
                     replica_schema_xml = os.path.join(tempfile.gettempdir(),
                                                       'ReplicaSchema.xml')
-                    arcpy.ExportReplicaSchema_management(self.path, replica_schema_xml,
-                                                         replica.name)
-                    with open(replica_schema_xml, 'r') as f:
-                        data = f.readlines()[0]
+                    arcpy.ExportReplicaSchema_management(
+                        in_geodatabase=self.path,
+                        output_replica_schema_file=replica_schema_xml,
+                        in_replica=replica.name,
+                    )
+                    with open(replica_schema_xml, 'r') as fh:
+                        schema_xml_data = fh.readlines()[0]
                     try:
                         os.remove(replica_schema_xml)
-                    except:
+                    except Exception:
                         pass
-                    xml = ET.fromstring(data)
+                    xml = ElementTree.fromstring(schema_xml_data)
                     od['Creation date'] = xml.find('WorkspaceDefinition').find(
-                        'GPReplica').find('CreationDate').text.replace('T', ' ')
+                        'GPReplica').find('CreationDate').text.replace(
+                            'T', ' ')
 
-                    datasets = xml.find('WorkspaceDefinition').find('GPReplica').find(
-                        'GPReplicaDescription').find('GPReplicaDatasets')
+                    datasets = xml.find('WorkspaceDefinition').find(
+                        'GPReplica').find('GPReplicaDescription').find(
+                            'GPReplicaDatasets')
                     datasets_pairs = sorted(
-                        [(d.find('DatasetName').text, d.find('TargetName').text)
-                         for d in datasets.getchildren()],
+                        ((d.find('DatasetName').text, d.find('TargetName').text)
+                         for d in datasets.getchildren()),
                         key=lambda pair: pair[0].lower())
 
-                    od['Datasets'] = '<br>'.join(
-                        ['{} -> {}'.format(i[0], i[1]) for i in datasets_pairs])
+                    od['Datasets'] = '<br>'.join([
+                        '{0} -> {1}'.format(i[0], i[1]) for i in datasets_pairs
+                    ])
 
                 replicas_props.append(od)
         return replicas_props
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_versions(self):
-        """return SDE geodatabase version objects as ordered dict"""
+        """Get ArcSDE geodatabase version objects as ordered dict."""
         versions_props = []
-        if arcpy_found and self.wkspc_type == 'Enterprise geodatabase' and self.is_gdb_enabled:
+        if (self.arcpy_found and self.wkspc_type == 'Enterprise geodatabase'
+                and self.is_gdb_enabled):
             for version in arcpy.da.ListVersions(self.path):
                 od = OrderedDict()
                 for k, v in GDB_VERSION_PROPS.items():
                     if k in ('ancestors', 'children'):
-                        prop_value = ', '.join([s.name for s in getattr(version, k) if s])
+                        prop_value = ', '.join(
+                            [s.name for s in getattr(version, k) if s])
                         od[v] = prop_value
                     else:
                         prop_value = getattr(version, k, '')
-                        if prop_value != None:
+                        if prop_value is not None:
                             od[v] = prop_value
                         else:
                             od[v] = ''
@@ -120,19 +151,20 @@ class Geodatabase(object):
 
         return versions_props
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_relationship_classes(self):
-        """return geodatabase relationship classes objects as ordered dict"""
+        """Get geodatabase relationship classes objects as ordered dict."""
         rc_props = []
-        if arcpy_found and self.is_gdb_enabled:
-            for gdb_path, fd, rcs in arcpy.da.Walk(
+        if self.arcpy_found and self.is_gdb_enabled:
+            for gdb_path, _fd, rcs in arcpy.da.Walk(
                     self.path, datatype='RelationshipClass'):
                 for rc in rcs:
                     rc_desc = arcpy.Describe(os.path.join(gdb_path, rc))
 
                     od = OrderedDict()
                     od['Name'] = rc
-                    if os.path.basename(gdb_path) != os.path.basename(self.path):
+                    if os.path.basename(gdb_path) != os.path.basename(
+                            self.path):
                         # rc is inside a feature dataset
                         od['Feature dataset'] = os.path.basename(gdb_path)
                     else:
@@ -154,12 +186,12 @@ class Geodatabase(object):
 
         return rc_props
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_domains(self):
-        """return geodatabase domains as ordered dict"""
+        """Get geodatabase domains as ordered dict."""
         domains_props = []
         if self.is_gdb_enabled:
-            if arcpy_found:
+            if self.arcpy_found:
                 for domain in arcpy.da.ListDomains(self.path):
                     od = OrderedDict()
                     for k, v in GDB_DOMAIN_PROPS.items():
@@ -175,20 +207,24 @@ class Geodatabase(object):
                             if k == 'domainType':
                                 od[v] = OGR_DOMAIN_PROPS_MAPPINGS[domain_type]
 
-                            #describing domain range
+                            # describing domain range
                             elif k == 'range':
                                 try:
-                                    od[v] = (float(domain.find('MinValue').text),
-                                             float(domain.find('MaxValue').text))
+                                    od[v] = (
+                                        float(domain.find('MinValue').text),
+                                        float(domain.find('MaxValue').text),
+                                    )
                                 except AttributeError:
                                     od[v] = ''
 
-                            #describing domain coded values
+                            # describing domain coded values
                             elif k == 'codedValues':
                                 try:
-                                    cvs = domain.find('CodedValues').findall('CodedValue')
+                                    cvs = domain.find('CodedValues').findall(
+                                        'CodedValue')
                                     od[v] = {
-                                        cv.find('Code').text: cv.find('Name').text
+                                        cv.find('Code').text:
+                                        cv.find('Name').text
                                         for cv in cvs
                                     }
                                 except AttributeError:
@@ -197,7 +233,8 @@ class Geodatabase(object):
                                 try:
                                     if domain.find(k).text:
                                         od[v] = OGR_DOMAIN_PROPS_MAPPINGS.get(
-                                            domain.find(k).text, domain.find(k).text)
+                                            domain.find(k).text,
+                                            domain.find(k).text)
                                     else:
                                         od[v] = ''
                                 except AttributeError:
@@ -206,11 +243,11 @@ class Geodatabase(object):
 
         return domains_props
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_tables(self):
-        """return geodatabase tables as Table class instances"""
+        """Get geodatabase tables as `Table` class instances."""
         tables = []
-        if arcpy_found:
+        if self.arcpy_found:
             arcpy.env.workspace = self.path
             for tbl in arcpy.ListTables():
                 try:
@@ -221,11 +258,11 @@ class Geodatabase(object):
                     for k, v in GDB_TABLE_PROPS.items():
                         od[v] = getattr(tbl_instance, k, '')
 
-                    #custom props
+                    # custom props
                     od['Row count'] = tbl_instance.get_row_count()
                     num_attachments = tbl_instance.get_attachments_count()
 
-                    if num_attachments != None:
+                    if num_attachments is not None:
                         od['Attachments enabled'] = True
                         od['Attachments count'] = num_attachments
                     else:
@@ -234,7 +271,7 @@ class Geodatabase(object):
 
                     tables.append(od)
                 except Exception as e:
-                    print("Error. Could not read table", tbl, ". Reason: ", e)
+                    print('Error. Could not read table', tbl, '. Reason: ', e)
 
         else:
             table_names = [
@@ -249,20 +286,20 @@ class Geodatabase(object):
                     for k, v in GDB_TABLE_PROPS.items():
                         od[v] = getattr(tbl_instance, k, '')
 
-                    #custom props
+                    # custom props
                     od['Row count'] = tbl_instance.get_row_count()
                     tables.append(od)
                 except Exception as e:
                     print(e)
         return tables
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_feature_classes(self):
-        """return geodatabase feature classes as ordered dicts"""
+        """Get geodatabase feature classes as ordered dicts."""
         fcs = []
-        if arcpy_found:
+        if self.arcpy_found:
             arcpy.env.workspace = self.path
-            #iterate feature classes within feature datasets
+            # iterate feature classes within feature datasets
             fds = [fd for fd in arcpy.ListDatasets(feature_type='feature')]
             if fds:
                 for fd in fds:
@@ -272,7 +309,7 @@ class Geodatabase(object):
                         od['Feature dataset'] = fd
                         fcs.append(od)
 
-            #iterate feature classes in the geodatabase root
+            # iterate feature classes in the geodatabase root
             arcpy.env.workspace = self.path
             for fc in arcpy.ListFeatureClasses():
                 od = self._get_fc_props(fc)
@@ -281,7 +318,8 @@ class Geodatabase(object):
         else:
             ds = ogr.Open(self.path, 0)
             fcs_names = [
-                ds.GetLayerByIndex(i).GetName() for i in range(0, ds.GetLayerCount())
+                ds.GetLayerByIndex(i).GetName()
+                for i in range(0, ds.GetLayerCount())
                 if ds.GetLayerByIndex(i).GetGeometryColumn()
             ]
             for fc_name in fcs_names:
@@ -290,60 +328,55 @@ class Geodatabase(object):
                     od = OrderedDict()
                     for k, v in GDB_FC_PROPS.items():
                         od[v] = getattr(fc_instance, k, '')
-                    #custom props
+                    # custom props
                     od['Row count'] = fc_instance.get_row_count()
                     fcs.append(od)
                 except Exception as e:
                     print(e)
         return fcs
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _get_gdb_ds(self):
-        """return the geodatabase OGR data source object"""
-        if not arcpy_found:
+        """Get the geodatabase OGR data source object."""
+        if not self.arcpy_found:
             return ogr.Open(self.path, 0)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _get_ogr_metadata_full(self):
-        """return the full geodatabase metadata as a list of xml objects"""
+        """Get the full geodatabase metadata as a list of xml objects."""
         metadata = None
-        if not arcpy_found:
+        if not self.arcpy_found:
             res = self.ds.ExecuteSQL('select * from GDB_Items')
             res.CommitTransaction()
             metadata = []
-            for i in range(0, res.GetFeatureCount()):
-                item = json.loads(
-                    res.GetNextFeature().ExportToJson())['properties']['Definition']
+            for _i in range(0, res.GetFeatureCount()):
+                item = json.loads(res.GetNextFeature().
+                                  ExportToJson())['properties']['Definition']
                 if item:
-                    xml = ET.fromstring(item)
+                    xml = ElementTree.fromstring(item)
                     metadata.append(xml)
         return metadata
 
-    #----------------------------------------------------------------------
-    def _ogr_get_fcs(self):
-        """return an xml object with the geodatabase feature classes metadata"""
-        pass
-
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _ogr_get_geodatabase(self):
-        """return an xml object with the metadata about the geodatabase repository"""
+        """Return an xml object with the metadata of geodatabase repository."""
         for item in self.metadata:
             if item.tag == 'DEWorkspace':
                 return item
 
-        #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
     def _ogr_get_domains(self):
-        """return an xml object with the geodatase domains metadata"""
+        """Get an xml object with the geodatase domains metadata."""
         domains = defaultdict(list)
         for item in self.metadata:
             if item.tag in ('GPCodedValueDomain2', 'GPRangeDomain2'):
                 domains[item.tag].append(item)
         return domains
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     @staticmethod
     def _get_fc_props(fc):
-        """return single geodatabase feature class props as ordered dict"""
+        """Get single geodatabase feature class props as ordered dict."""
         fc_instance = FeatureClass(arcpy.Describe(fc).catalogPath)
         od = OrderedDict()
 
@@ -353,11 +386,11 @@ class Geodatabase(object):
             if not passed_first_column:
                 od['Feature dataset'] = ''
                 passed_first_column = True
-        #custom props
+        # custom props
         od['Row count'] = fc_instance.get_row_count()
         num_attachments = fc_instance.get_attachments_count()
 
-        if num_attachments != None:
+        if num_attachments is not None:
             od['Attachments enabled'] = True
             od['Attachments count'] = num_attachments
         else:
@@ -366,27 +399,27 @@ class Geodatabase(object):
 
         return od
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _get_release(self):
-        """return geodatabase release version"""
-        if arcpy_found:
+        """Get geodatabase release version."""
+        if self.arcpy_found:
             return GDB_RELEASE.get(arcpy.Describe(self.path).release, '')
         else:
             xml = self._ogr_get_geodatabase()
-            return GDB_RELEASE.get(','.join([
-                xml.find('MajorVersion').text,
-                xml.find('MinorVersion').text,
-                xml.find('BugfixVersion').text
-            ]), '')
+            return GDB_RELEASE.get(
+                ','.join([
+                    xml.find('MajorVersion').text,
+                    xml.find('MinorVersion').text,
+                    xml.find('BugfixVersion').text,
+                ]), '')
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _get_wkspc_type(self):
-        """return geodatabase workspace type - personal, file, SDE"""
-        if arcpy_found:
+        """Get geodatabase workspace type."""
+        if self.arcpy_found:
             return [
-                value for key, value in GDB_WKSPC_TYPE.items()
-                if key.lower() in arcpy.Describe(
-                    self.path).workspaceFactoryProgID.lower()
+                value for key, value in GDB_WKSPC_TYPE.items() if key.lower() in
+                arcpy.Describe(self.path).workspaceFactoryProgID.lower()
             ][0]
         else:
             return 'File geodatabase'
