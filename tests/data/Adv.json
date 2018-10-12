@@ -4,6 +4,12 @@
         "Domain type": "CodedValue",
         "Description": "Desc1"
     },
+    
+    "relclasses": {
+        "Name": "SampleRelClass",
+        "Origin class names": "Fc1",
+        "Destination class names": "Fc2"
+    },
 
     "tables": {
         "Name": "Table1",

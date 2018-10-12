@@ -111,3 +111,4 @@ ENV/
 # geodatabases
 *.gdb
 debugger.py
+*.bat
