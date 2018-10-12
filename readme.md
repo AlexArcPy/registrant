@@ -118,6 +118,8 @@ This tool uses `arcpy` package (and if you don't have any ArcGIS software instal
 ### Report contents
 
 * General geodatabase overview
+* Enterprise geodatabase versions
+* Enterprise and local geodatabase replicas
 * Domains & coded values
 * Tables & Feature classes
 * Table & Feature class fields
@@ -143,6 +145,10 @@ Added in v0.5:
 Added in v0.6:
 
 * Reporting more information for GDAL users using geodatabase XML metadata
+
+Added in v0.7:
+
+* Redesigned architecture with the new public interface
 
 All fields in tables and feature classes have a property showing the order of the field (`UI order`) within the dataset as shown in the dataset properties window in ArcGIS Desktop or Pro that is the order in which the fields were added. This is the order in which fields appear when you open the Feature Class Properties or Table Properties window in ArcGIS Desktop or when you access the Fields window in ArcGIS Pro.
 
