@@ -1,3 +1,5 @@
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/AlexArcPy/registrant.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/AlexArcPy/registrant/context:python)
+
 ### General
 
 This Python package is used for generating HTML reports about the contents of Esri geodatabases. It supports working with Esri personal/file geodatabases as well as RDBMS enterprise geodatabases (however, it also works with RDBMS databases that were not geodatabase enabled).
