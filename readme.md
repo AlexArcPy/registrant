@@ -28,7 +28,7 @@ After HTML file is generated, you can open it in a web browser. The HTML file us
 ### Requirements
 
 * arcpy | GDAL 2.1.0
-* Python 3.6.6 (from Arcgis Pro 2.3.0)
+* Python 3.6.6 (from Arcgis Pro 2.3.3)
 * pandas >= 0.20.1
 * beautifulsoup4 >= 4.6.0
 * Microsoft Visual C++ 9.0 ( http://aka.ms/vcpython27 )
