@@ -31,6 +31,7 @@ After HTML file is generated, you can open it in a web browser. The HTML file us
 * Python 2.7 | 3.5
 * pandas >= 0.20.1
 * beautifulsoup4 >= 4.6.0
+*  Microsoft Visual C++ 9.0 ( http://aka.ms/vcpython27 )
 
 ### Installation
 
