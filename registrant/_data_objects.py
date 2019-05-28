@@ -9,7 +9,7 @@ from registrant._util_mappings import (
     BOOL_TO_YESNO_MAPPER,
 )
 
-import os
+import os, logging
 import operator
 import pkgutil
 from collections import OrderedDict
@@ -211,13 +211,16 @@ class Table(Dataset):
             for rc in getattr(self._desc, 'relationshipClassNames', [''])
         ]
         for rc in rel_classes:
-            rc_desc = arcpy.Describe(rc)
-            if rc_desc.isAttachmentRelationship:
-                return int(
-                    arcpy.GetCount_management(
-                        os.path.join(
-                            self.root,
-                            rc_desc.destinationClassNames[0])).getOutput(0))
+            try:
+                rc_desc = arcpy.Describe(rc)
+                if rc_desc.isAttachmentRelationship:
+                    return int(
+                        arcpy.GetCount_management(
+                            os.path.join(
+                                self.root,
+                                rc_desc.destinationClassNames[0])).getOutput(0))
+            except Exception as e:
+                logging.warn(e)
 
     # ----------------------------------------------------------------------
     def get_row_count(self):
